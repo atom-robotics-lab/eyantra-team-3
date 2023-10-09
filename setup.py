@@ -24,7 +24,7 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': [
+        'console_scripts': ["controller = hb_task_1b.controller:main", "service_node = hb_task_1b.service_node:main"
         ],
     },
 )

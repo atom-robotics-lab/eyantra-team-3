@@ -69,7 +69,6 @@
     </link>
 
 
-
     <!-- Right Wheel Joint -->
     <joint name ="right_wheel_joint" type="continuous" >
         <origin
@@ -120,7 +119,6 @@
            
         </visual>
     </link>
-
 
 
     <!-- Left Wheel Joint -->
@@ -175,7 +173,6 @@
     </link>
 
 
-
     <!-- Back Wheel Joint -->
     <joint name ="back_wheel_joint" type="continuous" >
         <origin
@@ -227,8 +224,6 @@
         </visual>
     </link>
 
-
-
     <!-- material properties -->
     <gazebo reference="right_wheel">
         <material>Gazebo/Blue</material>
@@ -242,18 +237,17 @@
         <material>Gazebo/Green</material>
     </gazebo>
 
-
-
     <!-- ros_control plugin -->
-
-  <gazebo>
+    <gazebo>
     <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
-      <commandTopic>cmd_vel</commandTopic>
-      <odometryTopic>odom</odometryTopic>
-      <odometryFrame>odom</odometryFrame>
-      <odometryRate>20.0</odometryRate>
-      <robotBaseFrame>chasis</robotBaseFrame>
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <odometryRate>20.0</odometryRate>
+        <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
-  </gazebo>
-
+    </gazebo>
 </robot>
+
+
+
