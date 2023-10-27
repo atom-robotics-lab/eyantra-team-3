@@ -25,7 +25,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'feedback = hb_task2a.feedback:main'
+            'feedback = hb_task2a.feedback:main',
+            'service_node = hb_task2a.service_node:main',
+            'controller = hb_task2a.controller:main'
          ],
     },
 )

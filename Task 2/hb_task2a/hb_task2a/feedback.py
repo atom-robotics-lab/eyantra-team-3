@@ -104,8 +104,8 @@ class ArUcoDetector(Node):
                         cv_x = self.x
                         cv_y = self.y
 
-                        # self.x /= 2
-                        # self.y /= 2
+                        self.x /= 2
+                        self.y /= 2
                         #Process coords
 
                         #Offset centre
@@ -126,7 +126,7 @@ class ArUcoDetector(Node):
                         dx = bottomLeft[0] - bottomRight[0]
                         dy = bottomLeft[1] - bottomRight[1]
 
-                        self.theta = math.atan(dy/dx)
+                        self.theta = -math.atan(dy/dx) *1.05
 
                         #Publish the bot coordinates to the topic  /detected_aruco
                         if markerID == 1:
@@ -139,7 +139,7 @@ class ArUcoDetector(Node):
                             self.publisher.publish(pose_msg)
 
                         # draw the ArUco marker ID on the image
-                        cv2.putText(cv_image, str(markerID), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                        cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                         print("[INFO] ArUco marker ID: {}".format(markerID))
                 
                 if len(ids) > 0:
