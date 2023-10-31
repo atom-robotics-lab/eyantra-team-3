@@ -117,8 +117,11 @@ class ArUcoDetector(Node):
                         self.y *= -1
 
                         #Normalize with Gazebo
-                        self.x *= (5/4)
-                        self.y *= (5/4)
+                        self.x /=2
+                        self.y /=2
+
+                        self.x *= (5/2)
+                        self.y *= (5/2)
 
                         cv2.circle(cv_image, (int(cv_x), int(cv_y)), 2, (0, 0, 255), -1)
 
@@ -132,8 +135,8 @@ class ArUcoDetector(Node):
                         if markerID == 1:
                             #Create msg
                             pose_msg = Pose2D()
-                            pose_msg.x = self.x * (25/26)
-                            pose_msg.y = self.y * (25/26)
+                            pose_msg.x = self.x #* (25/26)
+                            pose_msg.y = self.y #* (25/26)
                             pose_msg.theta = self.theta
                             
                             self.publisher.publish(pose_msg)

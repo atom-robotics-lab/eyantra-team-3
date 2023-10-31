@@ -180,7 +180,7 @@ def main(args=None):
                 # if( hb_controller.err_x <= 1.0 or hb_controller.err_y <= 1.0):
                 #     kp = 15.0
 
-                if( abs(hb_controller.err_x) <= 3.0 and abs(hb_controller.err_y) <= 3.0):
+                if( abs(hb_controller.err_x) <= 5.0 and abs(hb_controller.err_y) <= 5.0):
                     avg_error =  (abs(hb_controller.err_x) + abs(hb_controller.err_y)) / 2.0
                     if (avg_error != 0.0):
                         kp = 6.9/(avg_error ** 1.8)
@@ -188,11 +188,11 @@ def main(args=None):
                 # if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
                 #     kp = 2.8
                 
-                vel_x = hb_controller.err_x * kp * 0.105
-                vel_y = hb_controller.err_y * kp * 0.1
+                vel_x = hb_controller.err_x * kp * 0.105 #/ 5
+                vel_y = hb_controller.err_y * kp * 0.1 #/ 5
                 # Change the frame by using Rotation Matrix (If you find it required)
 
-                if(abs(hb_controller.err_x) <= 0.2 and abs(hb_controller.err_y) <= 0.2):
+                if(abs(hb_controller.err_x) <= 1.0 and abs(hb_controller.err_y) <= 1.0):
                     print("reached the required destination \n")
                     print("giving next coordinates \n")
                     count+=1
