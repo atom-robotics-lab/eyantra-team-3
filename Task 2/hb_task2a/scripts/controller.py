@@ -119,7 +119,6 @@ class HBController(Node):
         #	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
         ############################################   
 
-        #desired_angle += math.radians(-60)
         left_wheel_force_x = chasis_velocity * math.cos( math.radians(150) - desired_angle) # RED
         right_wheel_force_x = chasis_velocity * math.cos( math.radians(30) - desired_angle) #BLUE
         bottom_wheel_force_x = chasis_velocity * math.cos( math.radians(270) - desired_angle) #GREEN
@@ -132,7 +131,7 @@ class HBController(Node):
         wrench.force.y = round(right_wheel_force_x, 2)
         self.rw.publish(wrench)
 
-        wrench.force.y = round(bottom_wheel_force_x, 2) * 0.69
+        wrench.force.y = round(bottom_wheel_force_x, 2)
         self.fw.publish(wrench)
         return
 
@@ -175,24 +174,22 @@ def main(args=None):
                 hb_controller.err_theta = 0
                 print("ERROR: ", hb_controller.err_x, " , ", hb_controller.err_y, " \n ")
 
-                kp = 1.5
+                kp = 1.0
 
                 # if( hb_controller.err_x <= 1.0 or hb_controller.err_y <= 1.0):
                 #     kp = 15.0
 
-                if( abs(hb_controller.err_x) <= 3.0 and abs(hb_controller.err_y) <= 3.0):
-                    avg_error =  (abs(hb_controller.err_x) + abs(hb_controller.err_y)) / 2.0
-                    if (avg_error != 0.0):
-                        kp = 6.9/(avg_error ** 1.8)
+                if( abs(hb_controller.err_x) <= 3.0 or abs(hb_controller.err_y) <= 3.0):
+                    kp = 1.8
 
-                # if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
-                #     kp = 2.8
+                if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
+                    kp = 2.8
                 
                 vel_x = hb_controller.err_x * kp * 0.105
                 vel_y = hb_controller.err_y * kp * 0.1
                 # Change the frame by using Rotation Matrix (If you find it required)
 
-                if(abs(hb_controller.err_x) <= 0.2 and abs(hb_controller.err_y) <= 0.2):
+                if(abs(hb_controller.err_x) <= 0.5 and abs(hb_controller.err_y) <= 0.5):
                     print("reached the required destination \n")
                     print("giving next coordinates \n")
                     count+=1
@@ -225,7 +222,7 @@ def main(args=None):
                 # Changing the angles.. reference 2012'
 
                 chasis_velocity = math.sqrt(abs(vel_x*vel_x) + abs(vel_y*vel_y))
-                chasis_velocity = abs(chasis_velocity) * 30
+                chasis_velocity = abs(chasis_velocity) * 35
 
                 x = vel_x
                 y = vel_y
