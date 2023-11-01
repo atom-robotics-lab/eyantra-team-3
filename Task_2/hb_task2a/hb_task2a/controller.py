@@ -107,7 +107,7 @@ class HBController(Node):
     def send_request(self, request_goal):
         self.req.request_goal = request_goal
         self.future = self.cli.call_async(self.req)
-        time.sleep(1)
+        time.sleep(0.01)
         
 
     def inverse_kinematics(self, chasis_velocity, desired_angle):
@@ -175,28 +175,36 @@ def main(args=None):
                 hb_controller.err_theta = 0
                 print("ERROR: ", hb_controller.err_x, " , ", hb_controller.err_y, " \n ")
 
-                kp = 1.5
+                kp = 2.0
 
                 # if( hb_controller.err_x <= 1.0 or hb_controller.err_y <= 1.0):
                 #     kp = 15.0
 
-                if( abs(hb_controller.err_x) <= 5.0 and abs(hb_controller.err_y) <= 5.0):
-                    avg_error =  (abs(hb_controller.err_x) + abs(hb_controller.err_y)) / 2.0
-                    if (avg_error != 0.0):
-                        kp = 6.9/(avg_error ** 1.8)
+                # if( abs(hb_controller.err_x) <= 5.0 and abs(hb_controller.err_y) <= 5.0):
+                #     avg_error =  (abs(hb_controller.err_x) + abs(hb_controller.err_y)) / 2.0
+                #     if (avg_error != 0.0):
+                #         kp = 7.0/(avg_error * 1.8)
 
                 # if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
                 #     kp = 2.8
+
+                if( hb_controller.err_x <= 1.0 or hb_controller.err_y <= 1.0):
+                    avg_error =  (abs(hb_controller.err_x) + abs(hb_controller.err_y)) / 2.0
+                    if (avg_error != 0.0):
+                        kp = 7.0/(avg_error * 1.8)
+                
                 
                 vel_x = hb_controller.err_x * kp * 0.105 #/ 5
                 vel_y = hb_controller.err_y * kp * 0.1 #/ 5
                 # Change the frame by using Rotation Matrix (If you find it required)
 
-                if(abs(hb_controller.err_x) <= 1.0 and abs(hb_controller.err_y) <= 1.0):
+                if(abs(hb_controller.err_x) <= 0.5 and abs(hb_controller.err_y) <= 0.5):
                     print("reached the required destination \n")
                     print("giving next coordinates \n")
                     count+=1
                     print("POINTS DONE:",count)
+                    if(count == 50):
+                        break
                     
                     hb_controller.err_x = 0
                     hb_controller.err_y = 0
@@ -225,7 +233,7 @@ def main(args=None):
                 # Changing the angles.. reference 2012'
 
                 chasis_velocity = math.sqrt(abs(vel_x*vel_x) + abs(vel_y*vel_y))
-                chasis_velocity = abs(chasis_velocity) * 30
+                chasis_velocity = abs(chasis_velocity) * 40
 
                 x = vel_x
                 y = vel_y
