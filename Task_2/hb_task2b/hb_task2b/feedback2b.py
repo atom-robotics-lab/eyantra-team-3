@@ -106,22 +106,24 @@ class ArUcoDetector(Node):
                         cv_x = self.x
                         cv_y = self.y
 
-                        self.x /= 2
-                        self.y /= 2
+                        #self.x /= 2
+                        #self.y /= 2
                         #Process coords
 
                         #Offset centre
-                        self.x -= 250.0
-                        self.y -= 250.0
+                        # self.x -= 250.0
+                        # self.y -= 250.0
 
                         #Flip axis
                         #self.x *= -1
-                        self.y *= -1
-
+                        # self.y *= -1
+                        
                         #Normalize with Gazebo
-                        self.x /= 2
-                        self.y /= 2
-
+                        #self.x /= 2
+                        #self.y /= 2
+                        # self.x *= (5/4)
+                        # self.y *= (5/4)
+                    
                         cv2.circle(cv_image, (int(cv_x), int(cv_y)), 2, (0, 0, 255), -1)
 
                         

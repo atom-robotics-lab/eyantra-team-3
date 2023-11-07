@@ -13,6 +13,18 @@ def generate_launch_description():
         ),
         Node(
             package='hb_task2b',
-            executable='controller',
+            executable='feedback2b',
+        ),
+        Node(
+            package='hb_task2b',
+            executable='bot_controller_1',
+        ),
+        Node(
+            package='hb_task2b',
+            executable='bot_controller_2',
+        ),
+        Node(
+            package='hb_task2b',
+            executable='bot_controller_3'
         )
     ])

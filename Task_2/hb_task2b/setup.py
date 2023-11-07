@@ -25,10 +25,11 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-             'controller = hb_task2b.bot_controller:main',
+             'bot_controller_1 = hb_task2b.bot_controller_1:main',
+             'bot_controller_2 = hb_task2b.bot_controller_2:main',
+             'bot_controller_3 = hb_task2b.bot_controller_3:main',
              'nextgoalpub= hb_task2b.nextGoalPub:main',
-             'feedback2b= hb_task2b.feedback2b:main'
-
+             'feedback2b = hb_task2b.feedback2b:main',
          ],
     },
 )
