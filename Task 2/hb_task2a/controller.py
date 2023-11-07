@@ -56,10 +56,6 @@ def aruco_feedback_cb(msg):
     hola_x = msg.x
     hola_y = msg.y
     hola_theta = msg.theta
-    
-    #Normalising the coordinates
-    # hola_x = hola_x - 250.0
-    # hola_y = -(hola_y - 250)
     print("current position: ", hola_x , " ", hola_y, " ")
 
 	############################################
@@ -92,21 +88,28 @@ class HBController(Node):
         self.rw=self.create_publisher(Wrench, '/hb_bot_1/right_wheel_force', 10)
         self.fw=self.create_publisher(Wrench, '/hb_bot_1/rear_wheel_force', 10)
         self.subs=self.create_subscription(Pose2D, '/detected_aruco', aruco_feedback_cb, 10)
+    
+
+
+
 
         # For maintaining control loop rate.
         self.rate = self.create_rate(100)
+
 
         # client for the "next_goal" service
         self.cli = self.create_client(NextGoal, 'next_goal')      
         self.req = NextGoal.Request() 
         self.index = 0
+
     
     # Method to create a request to the "next_goal" service
     def send_request(self, request_goal):
         self.req.request_goal = request_goal
         self.future = self.cli.call_async(self.req)
-        time.sleep(0.01)
+        time.sleep(1)
         
+
     def inverse_kinematics(self, chasis_velocity, desired_angle):
         ############ ADD YOUR CODE HERE ############
 
@@ -131,7 +134,6 @@ class HBController(Node):
 
         wrench.force.y = round(bottom_wheel_force_x, 2) * 0.69
         self.fw.publish(wrench)
-        
         return
 
 def main(args=None):
@@ -173,27 +175,28 @@ def main(args=None):
                 hb_controller.err_theta = 0
                 print("ERROR: ", hb_controller.err_x, " , ", hb_controller.err_y, " \n ")
 
-                kp = 3.0
+                kp = 1.5
 
+                # if( hb_controller.err_x <= 1.0 or hb_controller.err_y <= 1.0):
+                #     kp = 15.0
 
-                if( hb_controller.err_x <= 5.0 or hb_controller.err_y <= 5.0):
+                if( abs(hb_controller.err_x) <= 5.0 and abs(hb_controller.err_y) <= 5.0):
                     avg_error =  (abs(hb_controller.err_x) + abs(hb_controller.err_y)) / 2.0
                     if (avg_error != 0.0):
-                        kp = 5.5
-                        #kp = 1.8 / 6.9 ** avg_error
+                        kp = 6.9/(avg_error ** 1.8)
+
+                # if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
+                #     kp = 2.8
                 
-                
-                vel_x = hb_controller.err_x * kp * 0.10 #* 5
-                vel_y = hb_controller.err_y * kp * 0.1 #* 5
+                vel_x = hb_controller.err_x * kp * 0.105 #/ 5
+                vel_y = hb_controller.err_y * kp * 0.1 #/ 5
                 # Change the frame by using Rotation Matrix (If you find it required)
 
-                if(abs(hb_controller.err_x) <= 2.0 and abs(hb_controller.err_y) <= 2.0):
+                if(abs(hb_controller.err_x) <= 1.0 and abs(hb_controller.err_y) <= 1.0):
                     print("reached the required destination \n")
                     print("giving next coordinates \n")
                     count+=1
                     print("POINTS DONE:",count)
-                    if(count == 50):
-                        break
                     
                     hb_controller.err_x = 0
                     hb_controller.err_y = 0
@@ -205,9 +208,24 @@ def main(args=None):
                         hb_controller.index = 0
                     hb_controller.send_request(hb_controller.index)
 
+                # elif (abs(hb_controller.err_x) >= 0.5 and  abs(hb_controller.err_y) >= 0.5) :
+                #     vel_x = hb_controller.err_x*kp 
+                #     vel_y = hb_controller.err_y*kp
+                
+                # elif(abs(hb_controller.err_x) <= 0.5 and abs(hb_controller.err_y) >= 0.5):
+                #     hb_controller.err_x = 0
+                #     vel_y = hb_controller.err_y*kp
+                #     #vel_x = 0.0
+                # elif(abs(hb_controller.err_x) >= 0.5 and abs(hb_controller.err_y) <= 0.5) :
+                #     hb_controller.err_y = 0
+                #     vel_x = hb_controller.err_x*kp
+                #     # vel_y = 0.0
+ 
+                # Calculate the required velocity of bot for the next iteration(s)
+                # Changing the angles.. reference 2012'
 
                 chasis_velocity = math.sqrt(abs(vel_x*vel_x) + abs(vel_y*vel_y))
-                chasis_velocity = abs(chasis_velocity) * 15
+                chasis_velocity = abs(chasis_velocity) * 30
 
                 x = vel_x
                 y = vel_y
@@ -215,19 +233,31 @@ def main(args=None):
                 if(abs(y)!= 0 and abs(x)!= 0):
                     ang = math.atan(abs(y)/abs(x))* 180/3.14
 
-                if(x<0 and y<0):  #2nd
+                if(x<0 and y>0):  #2nd
                     ds_ang = math.radians(105-ang)
                     
-                elif(x<0 and y>0):  #3rd
-                    ds_ang = math.radians(96+ang)
+                elif(x<0 and y<0):  #3rd
+                    ds_ang = math.radians(100+ang)
                     
-                elif(x>0 and y>0):  #4th
-                    ds_ang = math.radians(186+ang)
+                elif(x>0 and y<0):  #4th
+                    ds_ang = math.radians(175+ang)
                     
                 else: #1st
-                    ds_ang = math.radians(268 + ang)
+                    ds_ang = math.radians(248 + ang)
+
+                #print(ds_ang)
+
+                # if(vel_x >= 0.1):
+                #     velocity_theta =  math.atan(vel_y / vel_x)
+                # else:
+                #     velocity_theta = math.radians(90)
                 
-                desired_angle = ds_ang % (2 * 3.14)
+                # if(vel_y < 0):
+                #     desired_angle = math.radians(90) - velocity_theta
+                # else :
+                #     desired_angle = math.radians(360) - (math.radians(90) - velocity_theta) 
+
+                desired_angle = ds_ang
                 
                 # Find the required force vectors for individual wheels from it.(Inverse Kinematics)
                 hb_controller.inverse_kinematics(chasis_velocity, desired_angle)
@@ -243,8 +273,6 @@ def main(args=None):
         # Spin once to process callbacks
         rclpy.spin_once(hb_controller)
     
-    print("done hai jiiiii")
-    hb_controller.inverse_kinematics(0.0, 0.0)
     # Destroy the node and shut down ROS
     hb_controller.destroy_node()
     rclpy.shutdown()
@@ -252,3 +280,4 @@ def main(args=None):
 # Entry point of the script
 if __name__ == '__main__':
     main()
+    

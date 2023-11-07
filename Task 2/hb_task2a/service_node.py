@@ -55,7 +55,7 @@ class ServiceNode(Node):
         if self.logger_flag == 1:
             self.get_logger().info("Service started...")
             self.logger_flag = 0
-        time.sleep(0.01)
+        time.sleep(1)
         return response
 
 def generate_random_value(min_value=1, max_value=5):
