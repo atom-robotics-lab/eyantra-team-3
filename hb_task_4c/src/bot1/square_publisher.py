@@ -23,21 +23,22 @@ class BotController(Node):
 
         print(f"X: {x}, Y: {y}, Z: {z}")
 
-    def square(self):
-        self.rpm( 90.0, 30.0, 180.0)
-        time.sleep(2)
+    def inverse_kinematics(self, chasis_velocity, desired_angle):
+        ############ ADD YOUR CODE HERE ############
 
-        self.rpm(180.0, 70.0, 40.0)
-        time.sleep(2)
+        # INSTRUCTIONS & HELP : 
+        #	-> Use the target velocity you calculated for the robot in previous task, and
+        #	Process it further to find what proportions of that effort should be given to 3 individuals wheels !!
+        #	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
+        ############################################   
 
-        self.rpm( 90.0, 150.0, 0.0)
-        time.sleep(2)
+        #desired_angle += math.radians(-60)
+        left_wheel_force_x = chasis_velocity * math.cos( math.radians(150) - desired_angle) # RED
+        right_wheel_force_x = chasis_velocity * math.cos( math.radians(30) - desired_angle) #BLUE
+        bottom_wheel_force_x = chasis_velocity * math.cos( math.radians(270) - desired_angle) #GREEN
 
-        self.rpm(0.0, 110.0, 140.0)
-        time.sleep(2)
-
-        print("Square made")
-        self.rpm(90.0, 90.0, 90.0)
+        print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", bottom_wheel_force_x)
+        self.rpm(left_wheel_force_x, right_wheel_force_x, bottom_wheel_force_x)
 
 def main(args=None):
     rclpy.init(args=args)
