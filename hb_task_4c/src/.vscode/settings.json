@@ -1,0 +1,28 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/ubuntu/microros_ws/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/eyantra-team-3/install/my_robot_interfaces/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/eyantra-team-3/build/hb_task_1b",
+        "/home/ubuntu/eyantra-team-3/install/hb_task_1b/lib/python3.10/site-packages",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/install/turtlesim/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/build/hb_task_1a",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/install/hb_task_1a/lib/python3.10/site-packages",
+        "/home/ubuntu/eyrc_hb/hb_task1b_ws/install/hb_task_1b/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ubuntu/microros_ws/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/eyantra-team-3/install/my_robot_interfaces/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/eyantra-team-3/build/hb_task_1b",
+        "/home/ubuntu/eyantra-team-3/install/hb_task_1b/lib/python3.10/site-packages",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/install/turtlesim/local/lib/python3.10/dist-packages",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/build/hb_task_1a",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/install/hb_task_1a/lib/python3.10/site-packages",
+        "/home/ubuntu/eyrc_hb/hb_task1b_ws/install/hb_task_1b/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}
