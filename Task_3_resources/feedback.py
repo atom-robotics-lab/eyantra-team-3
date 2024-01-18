@@ -1,21 +1,5 @@
 #! /usr/bin/env python3
 
-'''
-*****************************************************************************************
-*
-*        		===============================================
-*           		Hologlyph Bots (HB) Theme (eYRC 2023-24)
-*        		===============================================
-*
-*  This script is to implement Task 2A of Hologlyph Bots (HB) Theme (eYRC 2023-24).
-*  
-*  This software is made available on an "AS IS WHERE IS BASIS".
-*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
-*  any and all claim(s) that emanate from the use of the Software or 
-*  breach of the terms of this agreement.
-*
-*****************************************************************************************
-'''
 ################### IMPORT MODULES #######################
 import rclpy
 from rclpy.node import Node
@@ -30,30 +14,15 @@ import numpy as np
 # Import the required modules
 ##############################################################
 class ArUcoDetector(Node):
-    
 
-    def __init__(self):
-        super().__init__('ar_uco_detector')
-
-        # Subscribe the topic /camera/image_raw
-        self.subscription = self.create_subscription(Image,'/camera/image_raw',self.image_callback,10)
-
-        self.bridge = CvBridge()
-
-        self.publisher = self.create_publisher(Pose2D, '/detected_aruco', 10)
-
-        #Test values
-        self.x = 0.0
-        self.y = 0.0
-        self.theta = 0.0
-
-    def image_callback(self, msg):
+    def image_callback(self,msg):
         try:
             #convert ROS image to opencv image
             cv_image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
 
             #Detect Aruco marker
 
+            #4x4 dict
             aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
             parameters = aruco.DetectorParameters()
 
@@ -61,9 +30,6 @@ class ArUcoDetector(Node):
 
 
             # #Distortion matrix
-            dist_mat = np.array([-0.361408, 0.096473, -0.014662, 0.002861, 0.000000])
-
-            cam_mat = np.array([404.85559, 0.0, 300.90983, 0.0, 415.3062, 240.35479, 0.0, 0.0, 1.0])
 
             #Find markers
             (corners, ids, rejected) = detector.detectMarkers(cv_image)
@@ -132,37 +98,74 @@ class ArUcoDetector(Node):
 
                         self.theta = -math.atan(dy/dx) *1.05
 
-                        #Publish the bot coordinates to the topic  /detected_aruco
-                        if markerID == 1:
-                            #Create msg
+                        if markerID in [1,2,3]:
+
                             pose_msg = Pose2D()
-                            pose_msg.x = self.x #* (25/26)
-                            pose_msg.y = self.y #* (25/26)
+
+                            pen_dist = 7.5
+                            x_off = pen_dist * 2 * math.sin(self.theta)
+                            y_off = pen_dist * 2 * math.cos(self.theta)
+
+                            pose_msg.x = (cv_x + x_off)
+                            pose_msg.y = (cv_y + y_off)
                             pose_msg.theta = self.theta
-                            
-                            self.publisher.publish(pose_msg)
+
+                            # Publish pose_msg based on markerID
+                            if markerID == 1:
+                                self.pen1_pub.publish(pose_msg)
+                            elif markerID == 2:
+                                self.pen2_pub.publish(pose_msg)
+                            elif markerID == 3:
+                                self.pen3_pub.publish(pose_msg)
+
+                            cv2.circle(cv_image, (int(pose_msg.x), int(pose_msg.y)), 3, (255, 0, 0), -1)
 
                         # draw the ArUco marker ID on the image
                         cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                         print("[INFO] ArUco marker ID: {}".format(markerID))
                 
                 if len(ids) > 0:
-                    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05,cam_mat,dist_mat)
+                    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05)
                     rotation_matrix, _ = cv2.Rodrigues(rvecs)
 
                     # Extract the yaw angle from the rotation matrix
                     yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
                     print(yaw)
 
-            
+                
             except Exception as e:
                 print(e)    
 
-            cv2.imshow("Image", cv2.resize(cv_image,(500,500)))
+            cv2.imshow("Image", cv_image)
+            cv2.waitKey(1)
+
             cv2.waitKey(1)
 
         except Exception as e:
             self.get_logger().error(e)
+        
+    def __init__(self):
+        super().__init__('ar_uco_detector')
+
+        # Subscribe the topic /camera/image_raw
+        self.subscription = self.create_subscription(
+            Image,
+            '/camera1/image_raw',
+            self.image_callback,
+            10)
+
+        self.bridge = CvBridge()
+
+        self.pen1_pub = self.create_publisher(Pose2D, '/pen1_pose', 10)
+        self.pen2_pub = self.create_publisher(Pose2D, '/pen2_pose', 10)
+        self.pen3_pub = self.create_publisher(Pose2D, '/pen3_pose', 10)
+
+        #Test values
+        self.x = 0.0
+        self.y = 0.0
+        self.theta = 0.0
+        
+        #self.image_callback()
 
 def main(args=None):
     rclpy.init(args=args)
