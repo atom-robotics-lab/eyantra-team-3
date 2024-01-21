@@ -27,100 +27,93 @@ DIM = (image_width, image_height)
 K = np.array(camera_matrix)
 D = np.array(distortion_coefficients[:, :4])  # Use only the first 4 coefficients
 
-
 class ArUcoDetector(Node):
-
+    
     def image_callback(self,msg):
+        print("received")
         try:
             #convert ROS image to opencv image
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
+            
+            # cv_image = image
+            cv_image = self.undistort(image)
+            cv2.imshow("Image",image)
+            cv2.waitKey(1)
 
-            #cv_image = self.undistort(self,image)
-            cv_image = image
-            # #Distortion matrix
-
+            self.i+=1
+            print("i : ", self.i)
+            
+            #Distortion matrix
             aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
-
             parameters = aruco.DetectorParameters_create()
             #Find markers
-            (corners, ids, rejected) = aruco.detectMarkers(cv_image,aruco_dict, parameters=parameters)
-
-            #Lag gye :D
-            #X,y,theta nikalna hai
-
+            (corners, ids, rejected) = aruco.detectMarkers(cv_image, aruco_dict, parameters=parameters)
+            print("Corners : ", corners)
+            
             try:
-                #print(corners, ids, rejected)
-                #print(ids)
+                print(corners, ids, rejected)
+                print(ids)
+            
                 for i in range(len(ids)):
                     ids = ids.flatten()
-
-                # loop over the detected ArUCo corners
+                #  loop over the detected ArUCo corners
                 for (markerCorner, markerID) in zip(corners, ids):
-
                     # extract the marker corners (which are always returned in
+                    
                     # top-left, top-right, bottom-right, and bottom-left order)
                     corners = markerCorner.reshape((4, 2))
                     (topLeft, topRight, bottomRight, bottomLeft) = corners
-
+                    
                     # convert each of the (x, y)-coordinate pairs to integers
                     topRight = (int(topRight[0]), int(topRight[1]))
                     bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
                     bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
                     topLeft = (int(topLeft[0]), int(topLeft[1]))
-
+                    
                     # draw the bounding box of the ArUCo detection
                     cv2.line(cv_image, topLeft, topRight, (0, 255, 0), 1)
                     cv2.line(cv_image, topRight, bottomRight, (0, 255, 0), 1)
                     cv2.line(cv_image, bottomRight, bottomLeft, (0, 255, 0), 1)
                     cv2.line(cv_image, bottomLeft, topLeft, (0, 255, 0), 1)
-
-                    
+                        
                     # compute and draw the center (x, y)-coordinates of the ArUco marker
                     self.x = float((topLeft[0] + bottomRight[0]) / 2.0)
                     self.y = float((topLeft[1] + bottomRight[1]) / 2.0)
-                    
+                        
                     cv_x = self.x
                     cv_y = self.y
-
                     self.x /= 2
                     self.y /= 2
                     #Process coords
-
+                    
                     #Offset centre
                     self.x -= 250.0
                     self.y -= 250.0
-
+                    
                     #Flip axis
-                    #self.x *= -1
+                    self.x *= -1
                     self.y *= -1
-
+                    
                     #Normalize with Gazebo
                     self.x /=2
                     self.y /=2
-
                     self.x *= (5/2)
                     self.y *= (5/2)
-
                     cv2.circle(cv_image, (int(cv_x), int(cv_y)), 2, (0, 0, 255), -1)
-
+                    
                     #calc theta
                     dx = bottomLeft[0] - bottomRight[0]
                     dy = bottomLeft[1] - bottomRight[1]
-
                     self.theta = -math.atan(dy/dx) *1.05
 
                     if markerID in [1,2,3]:
-
                         pose_msg = Pose2D()
-
                         pen_dist = 7.5
                         x_off = pen_dist * 2 * math.sin(self.theta)
                         y_off = pen_dist * 2 * math.cos(self.theta)
-
                         pose_msg.x = float(cv_x + x_off)
                         pose_msg.y = float(cv_y + y_off)
                         pose_msg.theta = self.theta
-
                         # Publish pose_msg based on markerID
                         if markerID == 1:
                             self.pen1_pub.publish(pose_msg)
@@ -128,32 +121,36 @@ class ArUcoDetector(Node):
                             self.pen2_pub.publish(pose_msg)
                         elif markerID == 3:
                             self.pen3_pub.publish(pose_msg)
-
                         cv2.circle(cv_image, (int(pose_msg.x), int(pose_msg.y)), 3, (255, 0, 0), -1)
-
+                    
                     # draw the ArUco marker ID on the image
                     cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                     print("[INFO] ArUco marker ID: {}".format(markerID))
+                    
+                    if len(ids) > 0:
+                        #rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05, camera_matrix, distortion_coefficients)
+                        rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05, camera_matrix, distortion_coefficients)
+                        rotation_matrix, _ = cv2.Rodrigues(rvecs)
+                        # Extract the yaw angle from the rotation matrix
+                        yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
+                        print(yaw)
                 
+            except Exception as e:
                 if len(ids) > 0:
-                    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05)
+                    #rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05, camera_matrix, distortion_coefficients)
+                    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners,0.05, camera_matrix, distortion_coefficients)
                     rotation_matrix, _ = cv2.Rodrigues(rvecs)
-
                     # Extract the yaw angle from the rotation matrix
                     yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
                     print(yaw)
-
-                
-            except Exception as e:
                 print(e)    
-
-            #cv2.imshow("Image", cv2.resize(cv_image, (500, 500)))
-            cv2.imshow("Image",image)
+            cv2.imshow("Image", cv2.resize(cv_image, (500, 500)))
+            cv2.imshow("Image",cv_image)
             cv2.waitKey(1)
-
             cv2.waitKey(1)
 
         except Exception as e:
+            print("Exception")
             self.get_logger().error(e)
 
     def undistort(self,image):
@@ -179,10 +176,10 @@ class ArUcoDetector(Node):
         undistorted_img = undistorted_img[0:480,70:550]
 
         # cv2.imshow("Original Image", image)
-        cv2.imshow("Undistorted Image", cv2.resize(undistorted_img,(500,500)))
+        #cv2.imshow("Undistorted Image", cv2.resize(undistorted_img,(500,500)))
         #cv2.imshow("Undistorted Image", undistorted_img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
 
         return undistorted_img
         
@@ -192,9 +189,11 @@ class ArUcoDetector(Node):
         # Subscribe the topic /camera/image_raw
         self.subscription = self.create_subscription(
             Image,
-            '/image_rect_color',
+            '/camera1/image_raw',
             self.image_callback,
-            10)
+            1)
+        
+        self.i = 0
 
         self.bridge = CvBridge()
 
@@ -217,7 +216,7 @@ def main(args=None):
 
     rclpy.spin(aruco_detector)
 
-    aruco_detector.destroy_node()
+    #aruco_detector.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
