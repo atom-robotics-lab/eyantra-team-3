@@ -20,6 +20,7 @@ rcl_node_t node;
 Servo servo_top;
 Servo servo_right;
 Servo servo_left;
+Servo servo_arm;
 
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
@@ -44,6 +45,7 @@ void setup() {
   servo_top.attach(27);
   servo_right.attach(26);
   servo_left.attach(25);
+  servo_arm.attach(33);
   servo_top.write(90);
   servo_right.write(90);
   servo_left.write(90);
