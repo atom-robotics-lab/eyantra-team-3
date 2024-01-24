@@ -33,10 +33,10 @@ from rclpy.node import Node
 import time
 import math
 from tf_transformations import euler_from_quaternion
-from my_robot_interfaces.msg import Goal  
+from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Wrench
-from geometry_msgs.msg import PoseArray        
+from geometry_msgs.msg import PoseArray    
 
 
 
@@ -82,12 +82,13 @@ class HBController(Node):
 
 
                                                                 #Subscribers
-        self.subscription = self.create_subscription(
+        """self.subscription = self.create_subscription(
             Goal,  
             'hb_bot_1/goal',  
             self.goalCallBack,  # Callback function to handle received messages
             10  # QoS profile, here it's 10 which means a buffer size of 10 messages
         )  
+        """
         self.subs=self.create_subscription(Pose2D, '/detected_aruco_1',self.aruco_feedback_cb, 10)
 
 
