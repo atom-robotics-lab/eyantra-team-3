@@ -31,6 +31,7 @@ D = np.array(distortion_coefficients[:, :4])  # Use only the first 4 coefficient
 class ArUcoDetector(Node):
 
     def image_callback(self,msg):
+        print("Img received")
         try:
             #convert ROS image to opencv image
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
@@ -69,7 +70,7 @@ class ArUcoDetector(Node):
                     topLeft = (int(topLeft[0]), int(topLeft[1]))
 
                     bounding_box = (topRight,bottomRight,bottomLeft,topLeft)
-                    self.last_bounding_boxes[markerID] = bounding_box
+                    # self.last_bounding_boxes[markerID] = bounding_box
 
                     # draw the bounding box of the ArUCo detection
                     cv2.line(cv_image, topLeft, topRight, (0, 255, 0), 1)
@@ -146,7 +147,7 @@ class ArUcoDetector(Node):
 
             #cv2.imshow("Image", cv2.resize(cv_image, (500, 500)))
             cv2.imshow("Image",cv_image)
-            cv2.waitKey(0)
+            cv2.waitKey(1)
         
         except Exception as e:
             self.get_logger().error(e)
@@ -198,16 +199,7 @@ class ArUcoDetector(Node):
         self.pen2_pub = self.create_publisher(Pose2D, '/pen2_pose', 10)
         self.pen3_pub = self.create_publisher(Pose2D, '/pen3_pose', 10)
 
-        self.last_bounding_boxes = {
-            1: None,
-            2: None,
-            3: None,
-            4: None,
-            8: None,
-            10: None,
-            12: None
-        }
-        self.ids=[1,2,3,4,8,10,12]
+        # self.ids=[1,2,3,4,8,10,12]
         #Test values
         self.x = 0.0
         self.y = 0.0
