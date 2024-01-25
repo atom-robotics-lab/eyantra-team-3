@@ -110,11 +110,15 @@ class ArUcoDetector(Node):
 
                     #calc theta
                     dx = bottomLeft[0] - bottomRight[0]
-                    dy = abs(bottomLeft[1] - bottomRight[1])    
+                    dy = bottomLeft[1] - bottomRight[1]   
                     
-                    if dx!=0:                        self.theta = -math.atan(dy/dx) *1.05
+                    if dx!=0:                        
+                        self.theta = -math.atan(dy/dx) *1.05
                         if self.theta<0:
                             self.theta = math.pi + self.theta
+
+                        if bottomLeft[1]<bottomRight[1]:
+                            self.theta += math.pi
                     else:
                         self.theta = 0.0
 
@@ -141,6 +145,11 @@ class ArUcoDetector(Node):
                             self.pen3_pub.publish(pose_msg)
 
                         cv2.circle(cv_image, (int(pose_msg.x), int(pose_msg.y)), 3, (255, 0, 0), -1)
+
+                        pose_x = (bottomLeft[0] + bottomRight[0])/2
+                        pose_y = (bottomLeft[1] + bottomRight[1])/2
+                        
+                        # cv2.circle(cv_image, (int(pose_x), int(pose_y)), 3, (255, 0, 0), -1)
 
                     # draw the ArUco marker ID on the image
                     cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
