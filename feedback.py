@@ -31,7 +31,8 @@ D = np.array(distortion_coefficients[:, :4])  # Use only the first 4 coefficient
 class ArUcoDetector(Node):
 
     def image_callback(self,msg):
-        print("Img received")
+
+        # print("Img received")
         try:
             #convert ROS image to opencv image
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
@@ -109,12 +110,13 @@ class ArUcoDetector(Node):
 
                     #calc theta
                     dx = bottomLeft[0] - bottomRight[0]
-                    dy = bottomLeft[1] - bottomRight[1]
+                    dy = abs(bottomLeft[1] - bottomRight[1])    
                     
-                    if dx!=0:
-                        self.theta = -math.atan(dy/dx) *1.05
+                    if dx!=0:                        self.theta = -math.atan(dy/dx) *1.05
+                        if self.theta<0:
+                            self.theta = math.pi + self.theta
                     else:
-                        self.theta = 0
+                        self.theta = 0.0
 
                     if markerID in [1,2,3]:
 
@@ -123,6 +125,8 @@ class ArUcoDetector(Node):
                         pen_dist = 7.5
                         x_off = pen_dist * 2 * math.sin(self.theta)
                         y_off = pen_dist * 2 * math.cos(self.theta)
+
+                        print(markerID," : ",self.theta)
 
                         pose_msg.x = float(cv_x + x_off)
                         pose_msg.y = float(cv_y + y_off)
@@ -140,7 +144,15 @@ class ArUcoDetector(Node):
 
                     # draw the ArUco marker ID on the image
                     cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
-                    print("[INFO] ArUco marker ID: {}".format(markerID))
+                    # print("[INFO] ArUco marker ID: {}".format(markerID))
+
+                    # rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, camera_matrix, distortion_coefficients)
+
+                    # if rvecs is not None and tvecs is not None:
+                    #     for rvec, tvec in zip(rvecs, tvecs):
+                    #         rotation_matrix, _ = cv2.Rodrigues(rvec)
+                    #         yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
+                    #         print("Yaw angle:", np.degrees(yaw))
     
             except Exception as e:
                 print(e)    
