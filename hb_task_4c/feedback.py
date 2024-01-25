@@ -189,7 +189,7 @@ class ArUcoDetector(Node):
         # Subscribe the topic /camera/image_raw
         self.subscription = self.create_subscription(
             Image,
-            '/camera1/image_raw',
+            '/image_rect_color',
             self.image_callback,
             10)
 
