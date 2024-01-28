@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose2D
+from std_msgs.msg import Bool
 import time
 import math
 
@@ -30,6 +31,7 @@ class BotController(Node):
     def __init__(self):
         super().__init__('bot_controller')
         self.publisher = self.create_publisher(Twist, '/cmd_vel/bot1', 10)
+        self.bool_publsiher = self.create_publisher(Bool, '/pen1_down'10)
         self.subs=self.create_subscription(Pose2D, '/pen1_pose', aruco_feedback_cb, 10)
 
     def rpm(self, x, y, z):
@@ -63,6 +65,7 @@ class BotController(Node):
         right_wheel_force_x = (right_wheel_force_x/chasis_velocity)*90 + 90
         bottom_wheel_force_x = (bottom_wheel_force_x/chasis_velocity)*90 + 90       
         self.rpm(left_wheel_force_x , right_wheel_force_x , bottom_wheel_force_x)
+        self.bool_publsiher.publish(0)
 
 def main(args=None):
     rclpy.init(args=args)
