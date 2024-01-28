@@ -31,7 +31,8 @@ D = np.array(distortion_coefficients[:, :4])  # Use only the first 4 coefficient
 class ArUcoDetector(Node):
 
     def image_callback(self,msg):
-        print("Img received")
+
+        # print("Img received")
         try:
             #convert ROS image to opencv image
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
@@ -109,12 +110,17 @@ class ArUcoDetector(Node):
 
                     #calc theta
                     dx = bottomLeft[0] - bottomRight[0]
-                    dy = bottomLeft[1] - bottomRight[1]
+                    dy = bottomLeft[1] - bottomRight[1]   
                     
-                    if dx!=0:
+                    if dx!=0:                        
                         self.theta = -math.atan(dy/dx) *1.05
+                        if self.theta<0:
+                            self.theta = math.pi + self.theta
+
+                        if bottomLeft[1]<bottomRight[1]:
+                            self.theta += math.pi
                     else:
-                        self.theta = 0
+                        self.theta = 0.0
 
                     if markerID in [1,2,3]:
 
@@ -123,6 +129,8 @@ class ArUcoDetector(Node):
                         pen_dist = 7.5
                         x_off = pen_dist * 2 * math.sin(self.theta)
                         y_off = pen_dist * 2 * math.cos(self.theta)
+
+                        print(markerID," : ",self.theta)
 
                         pose_msg.x = float(cv_x + x_off)
                         pose_msg.y = float(cv_y + y_off)
@@ -138,9 +146,22 @@ class ArUcoDetector(Node):
 
                         cv2.circle(cv_image, (int(pose_msg.x), int(pose_msg.y)), 3, (255, 0, 0), -1)
 
+                        pose_x = (bottomLeft[0] + bottomRight[0])/2
+                        pose_y = (bottomLeft[1] + bottomRight[1])/2
+                        
+                        # cv2.circle(cv_image, (int(pose_x), int(pose_y)), 3, (255, 0, 0), -1)
+
                     # draw the ArUco marker ID on the image
                     cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
-                    print("[INFO] ArUco marker ID: {}".format(markerID))
+                    # print("[INFO] ArUco marker ID: {}".format(markerID))
+
+                    # rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, camera_matrix, distortion_coefficients)
+
+                    # if rvecs is not None and tvecs is not None:
+                    #     for rvec, tvec in zip(rvecs, tvecs):
+                    #         rotation_matrix, _ = cv2.Rodrigues(rvec)
+                    #         yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
+                    #         print("Yaw angle:", np.degrees(yaw))
     
             except Exception as e:
                 print(e)    
@@ -189,7 +210,7 @@ class ArUcoDetector(Node):
         # Subscribe the topic /camera/image_raw
         self.subscription = self.create_subscription(
             Image,
-            '/camera1/image_raw',
+            '/image_rect_color',
             self.image_callback,
             10)
 

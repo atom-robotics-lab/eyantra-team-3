@@ -53,19 +53,23 @@ class BotController(Node):
         ############################################   
 
         #desired_angle += math.radians(-60)
+
         left_wheel_force_x = chasis_velocity * math.cos( math.radians(150) - desired_angle) # RED
         right_wheel_force_x = chasis_velocity * math.cos( math.radians(30) - desired_angle) #BLUE
         bottom_wheel_force_x = chasis_velocity * math.cos( math.radians(270) - desired_angle) #GREEN
-
         print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", bottom_wheel_force_x)
-        self.rpm(left_wheel_force_x + 30, right_wheel_force_x + 30, bottom_wheel_force_x + 30)
+
+        left_wheel_force_x = (left_wheel_force_x/chasis_velocity)*90 + 90
+        right_wheel_force_x = (right_wheel_force_x/chasis_velocity)*90 + 90
+        bottom_wheel_force_x = (bottom_wheel_force_x/chasis_velocity)*90 + 90       
+        self.rpm(left_wheel_force_x , right_wheel_force_x , bottom_wheel_force_x)
 
 def main(args=None):
     rclpy.init(args=args)
     bot = BotController()
 
-    x_goal      = 0.0
-    y_goal      = 0.0
+    x_goal      = 400.0
+    y_goal      = 400.0
     theta_goal  = 0.0
 
     print("GOAL: ", x_goal, " , ", y_goal, " , ", theta_goal, "\n")
@@ -74,8 +78,8 @@ def main(args=None):
     
     # Calculate Error from feedback
 
-    bot.err_x = x_goal - hola_x
-    bot.err_y = y_goal - hola_y
+    bot.err_x = x_goal - 200 #hola_x
+    bot.err_y = y_goal - 200 #hola_y
     bot.err_theta = 0
     print("ERROR: ", bot.err_x, " , ", bot.err_y, " \n ")
 
@@ -140,7 +144,7 @@ def main(args=None):
     print("VELOCITY: ", chasis_velocity, " , ", "ANGLE: ", desired_angle, " \n ")     
 
     while rclpy.ok():
-        bot.square()
+        # bot.square()
         rclpy.spin_once(bot)
 
     bot.destroy_node()
