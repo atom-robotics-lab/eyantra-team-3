@@ -1,33 +1,5 @@
 #! /usr/bin/env python3
-
-'''
-*****************************************************************************************
-*
-*        		===============================================
-*           		Hologlyph Bots (HB) Theme (eYRC 2023-24)
-*        		===============================================
-*
-*  This script is to implement Task 2B of Hologlyph Bots (HB) Theme (eYRC 2023-24).
-*  
-*  This software is made available on an "AS IS WHERE IS BASIS".
-*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
-*  any and all claim(s) that emanate from the use of the Software or 
-*  breach of the terms of this agreement.
-*
-*****************************************************************************************
-'''
-
-
-# Team ID:		[ Team-ID ]
-# Author List:		[ Names of team members worked on this file separated by Comma: Name1, Name2, ... ]
-# Filename:		feedback.py
-# Functions:
-#			[ Comma separated list of functions in this file ]
-# Nodes:		Add your publishing and subscribing node
-
-
 ################### IMPORT MODULES #######################
-
 import rclpy
 from rclpy.node import Node
 import time
@@ -39,19 +11,14 @@ from geometry_msgs.msg import Wrench
 from geometry_msgs.msg import PoseArray    
 
 
-
-
+                                                    # Initialize Global variables
 
 
 hola_theta=0
 hola_x=0
 hola_y = 0
-
-
-                                                    # Initialize Global variables
-
 PI=3.14
-wrench=Wrench()
+
 l = 8.76   #distance from center to wheel
 r = 1.9    # radius of wheel
 class HBController(Node):
@@ -72,7 +39,7 @@ class HBController(Node):
 	    #   /hb_bot_1/right_wheel_force,
 	    #   /hb_bot_1/left_wheel_force
 
-        #Similar to this you can create subscribers for hb_bot_2 and hb_bot_3
+        
 
                                                                 #Subscribers
         """self.subscription = self.create_subscription(
@@ -104,24 +71,17 @@ class HBController(Node):
         # For maintaining control loop rate.
         self.rate = self.create_rate(100)
 
-    def inverse_kinematics(self,vel):
-        ############ ADD YOUR CODE HERE ############
-
-        # INSTRUCTIONS & HELP : 
-        #	-> Use the target velocity you calculated for the robot in previous task, and
-        #	Process it further to find what proportions of that effort should be given to 3 individuals wheels !!
-        #	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
-        ############################################
-        #pass
-
-
+    def inverse_kinematics(self,vel,err_position):
+        
         w = 1   # omega of bot 
 
-        left_wheel_force_x = -vel[0]*math.sin(math.radians(30)+hola_theta) - vel[1]*math.cos(math.radians(30) + hola_theta) + l*w
-        right_wheel_force_x = -vel[0]*math.cos(math.radians(90) - hola_theta) + vel[1]*math.sin(math.radians(90) - hola_theta) + l*w
-        top_wheel_force_x = vel[0] + l*w #GREEN
-
-        print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", top_wheel_force_x_wheel_force_x)
+        #left_wheel_force_x = -vel[0]*math.sin(math.radians(30)+hola_theta) - vel[1]*math.cos(math.radians(30) + hola_theta) + l*w
+        #right_wheel_force_x = -vel[0]*math.cos(math.radians(90) - hola_theta) + vel[1]*math.sin(math.radians(90) - hola_theta) + l*w
+        #top_wheel_force_x = vel[0] + l*w #GREEN
+        left_wheel_force_x = -l*w -0.5*(vel[0]) + math.sin(math.radians(60))*vel[1]
+        right_wheel_force_x = -l*w -0.5*(vel[0]) + (-math.sin(math.radians(60))*vel[1])
+        top_wheel_force_x = -l*w + vel[0]
+        print("FORCE: Left:", left_wheel_force_x*0.52631, " , Right:", right_wheel_force_x*0.52631, " , Top:", top_wheel_force_x*0.52631)
 
         #wrench.force.y = round(left_wheel_force_x, 2)
         #self.lw.publish(wrench)
@@ -136,9 +96,11 @@ class HBController(Node):
 
         # 
         twist_msg = Twist()
-        twist_msg.linear.x = (left_wheel_force_x)/r
-        twist_msg.linear.y = (right_wheel_force_x)/r
-        twist_msg.linear.z = (top_wheel_force_x)/r
+        twist_msg.angular.x = float(max(err_position[0],err_position[1]))
+        #twist_msg.angular.y = err_position[1]
+        twist_msg.linear.y = (left_wheel_force_x/r)
+        twist_msg.linear.x = (right_wheel_force_x/r)
+        twist_msg.linear.z = (top_wheel_force_x/r)
         # publish velocities
         self.publisher.publish(twist_msg)
     
@@ -210,7 +172,7 @@ def main(args=None):
         hb_controller.err_x = hb_controller.bot_1_x[count] - hola_x
         hb_controller.err_y = hb_controller.bot_1_y[count] - hola_y
         #hb_controller.err_theta = 3.14 - hola_theta#hb_controller.bot_1_theta - hola_theta
-        print("ERROR: ", hb_controller.err_x, " , ", hb_controller.err_y, " \n "," ,",hb_controller.err_theta)
+        print("ERROR: ", hb_controller.err_x, " , ", hb_controller.err_y, " \n "," ,")
         print("present X:", hola_x,"    Y:",hola_y,"    THETA: ",hola_theta)
         
 
@@ -226,13 +188,15 @@ def main(args=None):
             kp = 2.0
             ka = 1.2
         
-        vel_x = hb_controller.err_x * kp * 0.105
-        vel_y = hb_controller.err_y * kp * 0.1
-        vel_theta = hb_controller.err_theta * ka*0
+        vel_x = hb_controller.err_x * kp #* 0.105
+        vel_y = hb_controller.err_y * kp #* 0.1
+        #vel_theta = hb_controller.err_theta * ka*0
         # Change the frame by using Rotation Matrix (If you find it required)
+        err_position = [hb_controller.err_x,hb_controller.err_y]
+        #print(err_position)
         vel = [vel_x,vel_y]
-        print("vel in X: ",vel_x,"  vel in  Y : ",vel_y,"    vel in THETA :",vel_theta)
-        hb_controller.inverse_kinematics(vel)
+        print("vel in X: ",vel_x,"  vel in  Y : ",vel_y)
+        hb_controller.inverse_kinematics(vel,err_position)
 
         
         #elif (abs(hb_controller.err_x) >= 0.5 and  abs(hb_controller.err_y) >= 0.5) :
@@ -253,7 +217,9 @@ def main(args=None):
 
 
 
-        if(abs(hb_controller.err_x) <= 1.0 and abs(hb_controller.err_y) <= 1.0 and abs(hb_controller.err_theta)<=1.0):
+        #                                                  check if it reached or not
+
+        if(abs(hb_controller.err_x) <= 1.0 and abs(hb_controller.err_y) <= 1.0):
             print("reached the required destination \n")
             print("giving next coordinates \n")
             
@@ -264,8 +230,9 @@ def main(args=None):
             hb_controller.err_theta = 0.0
             vel_x = 0.0
             vel_y = 0.0
-            vel_theta = 0.0
+            
             count=count+1
+            print("count value :",count)
 
         """
         chasis_velocity = math.sqrt(abs(vel_x*vel_x) + abs(vel_y*vel_y))
@@ -302,26 +269,6 @@ def main(args=None):
         #     desired_angle = math.radians(360) - (math.radians(90) - velocity_theta) 
 
         #desired_angle = ds_ang
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         # Spin once to process callbacks
