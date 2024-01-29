@@ -18,7 +18,8 @@ hola_theta=0
 hola_x=0
 hola_y = 0
 PI=3.14
-
+values90_180 = list(range(90,181))
+values0_90 = list(range(0,91))
 l = 8.76   #distance from center to wheel
 r = 1.9    # radius of wheel
 class HBController(Node):
@@ -96,8 +97,27 @@ class HBController(Node):
 
         # 
         twist_msg = Twist()
-        twist_msg.angular.x = float(max(err_position[0],err_position[1]))
+        max_value = float(min(abs(err_position[0]),abs(err_position[1])))
+        values_max = list(range(0,max_value))
         #twist_msg.angular.y = err_position[1]
+        # map values between two values
+
+        left_wheel_force = left_wheel_force_x/r
+        right_wheel_force = right_wheel_force_x/r
+        top_wheel_force = top_wheel_force_x/r
+
+        left_wheel_value = 0
+        right_wheel_value = 0
+        top_wheel_value = 0
+
+
+
+        
+        twist_msg.angular.x = max_value
+
+
+
+
         twist_msg.linear.y = (left_wheel_force_x/r)
         twist_msg.linear.x = (right_wheel_force_x/r)
         twist_msg.linear.z = (top_wheel_force_x/r)
@@ -180,7 +200,7 @@ def main(args=None):
         kp = 1.2
         ka = 0.8
 
-        if( hb_controller.err_x <= 1.0 or hb_controller.err_y <= 1.0):
+        if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
             kp = 10.0
             
 
