@@ -98,7 +98,7 @@ class HBController(Node):
         # 
         twist_msg = Twist()
         max_value = float(min(abs(err_position[0]),abs(err_position[1])))
-        values_max = list(range(0,max_value))
+        #values_max = list(range(0,max_value))
         #twist_msg.angular.y = err_position[1]
         # map values between two values
 
