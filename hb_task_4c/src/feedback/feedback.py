@@ -38,7 +38,12 @@ class ArUcoDetector(Node):
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
 
             #cv_image = self.undistort(self,image)
-            cv_image = image
+            cv_image = self.align(image)
+            
+            # cv2.imshow("Image",self.align(cv_image))
+            # cv2.waitKey(1)
+            # return
+        
             # #Distortion matrix
 
             aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
@@ -100,8 +105,8 @@ class ArUcoDetector(Node):
                     self.y *= -1
 
                     #Normalize with Gazebo
-                    self.x /=2
-                    self.y /=2
+                    self.x /=4
+                    self.y /=4
 
                     self.x *= (5/2)
                     self.y *= (5/2)
@@ -172,8 +177,13 @@ class ArUcoDetector(Node):
         
         except Exception as e:
             self.get_logger().error(e)
-            
 
+    def align(self,image):
+        image = image[55:435,170:510]    
+        image = cv2.resize(image,(500,500))
+
+        return image
+            
     def undistort(self,image):
         image = image[0:480,40:640]
 
@@ -197,6 +207,7 @@ class ArUcoDetector(Node):
         undistorted_img = undistorted_img[0:480,70:550]
 
         # cv2.imshow("Original Image", image)
+
         cv2.imshow("Undistorted Image", cv2.resize(undistorted_img,(500,500)))
         #cv2.imshow("Undistorted Image", undistorted_img)
         cv2.waitKey(0)
