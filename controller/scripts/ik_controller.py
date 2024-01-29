@@ -52,16 +52,17 @@ hola_y = 0
 
 PI=3.14
 wrench=Wrench()
-l=0.6
-
+l = 8.76   #distance from center to wheel
+r = 1.9    # radius of wheel
 class HBController(Node):
     def __init__(self):
         super().__init__('hb_controller')
         
 
         # Initialise the required variables
-        self.bot_1_x = []
-        self.bot_1_y = []
+        # hexagon shape , triangle , rectangle
+        self.bot_1_x = [200,175,125,100,125,175,200, 300,400,300,400, 200,400,400,200,200]
+        self.bot_1_y = [150,200,200,150,100,100,150, 100,100,200,100, 300,300,400,400,300]
         self.bot_1_theta = 0.0
 
         # Initialze Publisher and Subscriber
@@ -73,14 +74,6 @@ class HBController(Node):
 
         #Similar to this you can create subscribers for hb_bot_2 and hb_bot_3
 
-
-
-
-
-
-
-
-
                                                                 #Subscribers
         """self.subscription = self.create_subscription(
             Goal,  
@@ -89,15 +82,16 @@ class HBController(Node):
             10  # QoS profile, here it's 10 which means a buffer size of 10 messages
         )  
         """
-        self.subs=self.create_subscription(Pose2D, '/detected_aruco_1',self.aruco_feedback_cb, 10)
+        self.subs=self.create_subscription(Pose2D, '/pen2_pose',self.aruco_feedback_cb, 10)
+        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot2', 10)
 
 
 
 
                                                                 # Publishers 
-        self.lw=self.create_publisher(Wrench, '/hb_bot_1/left_wheel_force', 10)
-        self.rw=self.create_publisher(Wrench, '/hb_bot_1/right_wheel_force', 10)
-        self.fw=self.create_publisher(Wrench, '/hb_bot_1/rear_wheel_force', 10)
+        #self.lw=self.create_publisher(Wrench, '/hb_bot_1/left_wheel_force', 10)
+        #self.rw=self.create_publisher(Wrench, '/hb_bot_1/right_wheel_force', 10)
+        #self.fw=self.create_publisher(Wrench, '/hb_bot_1/rear_wheel_force', 10)
 
 
 
@@ -121,23 +115,33 @@ class HBController(Node):
         #pass
 
 
-        w=vel[2]
+        w = 1   # omega of bot 
 
         left_wheel_force_x = -vel[0]*math.sin(math.radians(30)+hola_theta) - vel[1]*math.cos(math.radians(30) + hola_theta) + l*w
         right_wheel_force_x = -vel[0]*math.cos(math.radians(90) - hola_theta) + vel[1]*math.sin(math.radians(90) - hola_theta) + l*w
-        bottom_wheel_force_x = vel[0] + l*w #GREEN
+        top_wheel_force_x = vel[0] + l*w #GREEN
 
-        print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", bottom_wheel_force_x)
+        print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", top_wheel_force_x_wheel_force_x)
 
-        wrench.force.y = round(left_wheel_force_x, 2)
-        self.lw.publish(wrench)
+        #wrench.force.y = round(left_wheel_force_x, 2)
+        #self.lw.publish(wrench)
 
-        wrench.force.y = round(right_wheel_force_x, 2)
-        self.rw.publish(wrench)
+        #wrench.force.y = round(right_wheel_force_x, 2)
+        #self.rw.publish(wrench)
 
-        wrench.force.y = round(bottom_wheel_force_x, 2)
-        self.fw.publish(wrench)
+        #wrench.force.y = round(top_wheel_force_x, 2)
+        #self.fw.publish(wrench)
         #return 
+
+
+        # 
+        twist_msg = Twist()
+        twist_msg.linear.x = (left_wheel_force_x)/r
+        twist_msg.linear.y = (right_wheel_force_x)/r
+        twist_msg.linear.z = (top_wheel_force_x)/r
+        # publish velocities
+        self.publisher.publish(twist_msg)
+    
 
 
 
@@ -179,7 +183,8 @@ class HBController(Node):
             #theta_goals.append(theta_goal)
             self.bot_1_theta=theta_goal
 """
-
+    
+ 
     
 
 
@@ -202,9 +207,9 @@ def main(args=None):
         #print("goal is : ",hb_controller.bot_1_x[count],"  present position is :",hola_x)
         # main code
         # find err in x,y,theta
-        hb_controller.err_x = 50.0 - hola_x#hb_controller.bot_1_x[count] - hola_x
-        hb_controller.err_y = 50.0 - hola_y #hb_controller.bot_1_y[count] - hola_y
-        hb_controller.err_theta = 3.14 - hola_theta#hb_controller.bot_1_theta - hola_theta
+        hb_controller.err_x = hb_controller.bot_1_x[count] - hola_x
+        hb_controller.err_y = hb_controller.bot_1_y[count] - hola_y
+        #hb_controller.err_theta = 3.14 - hola_theta#hb_controller.bot_1_theta - hola_theta
         print("ERROR: ", hb_controller.err_x, " , ", hb_controller.err_y, " \n "," ,",hb_controller.err_theta)
         print("present X:", hola_x,"    Y:",hola_y,"    THETA: ",hola_theta)
         
@@ -223,9 +228,9 @@ def main(args=None):
         
         vel_x = hb_controller.err_x * kp * 0.105
         vel_y = hb_controller.err_y * kp * 0.1
-        vel_theta = hb_controller.err_theta * ka
+        vel_theta = hb_controller.err_theta * ka*0
         # Change the frame by using Rotation Matrix (If you find it required)
-        vel = [vel_x,vel_y,vel_theta]
+        vel = [vel_x,vel_y]
         print("vel in X: ",vel_x,"  vel in  Y : ",vel_y,"    vel in THETA :",vel_theta)
         hb_controller.inverse_kinematics(vel)
 
