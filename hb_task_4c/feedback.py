@@ -38,7 +38,7 @@ class ArUcoDetector(Node):
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
 
             #cv_image = self.undistort(self,image)
-            cv_image = self.align(image)
+            cv_image = self.align(image,8)
             
             # cv2.imshow("Image",self.align(cv_image))
             # cv2.waitKey(1)
@@ -63,7 +63,7 @@ class ArUcoDetector(Node):
 
                 # loop over the detected ArUCo corners
                 for (markerCorner, markerID) in zip(corners, ids):
-
+                    
                     # extract the marker corners (which are always returned in
                     # top-left, top-right, bottom-right, and bottom-left order)
                     corners = markerCorner.reshape((4, 2))
@@ -101,7 +101,7 @@ class ArUcoDetector(Node):
                     diff_y = center_y - 250.0
 
                     mult_x = 500/(topRight[0] - topLeft[0])
-                    print(topRight[0], topLeft[0])
+                    # print(topRight[0], topLeft[0])
                     mult_y = 500/(topLeft[1] - bottomLeft[1])
 
                     # cv_x += diff_x
@@ -109,6 +109,18 @@ class ArUcoDetector(Node):
 
                     # cv_x *= mult_x
                     # cv_y *= mult_y
+
+                    self.x = cv_x
+                    self.y = cv_y
+
+                    cv_x -= 250
+                    cv_y -= 250
+
+                    cv_x *= (250/225)
+                    cv_y *= (250/225)
+
+                    cv_x += 250
+                    cv_y += 250
 
                     #calc theta
                     dx = bottomLeft[0] - bottomRight[0]
@@ -146,7 +158,7 @@ class ArUcoDetector(Node):
                         elif markerID == 3:
                             self.pen3_pub.publish(pose_msg)
 
-                        cv2.circle(cv_image, (int(pose_msg.x), int(pose_msg.y)), 3, (255, 0, 0), -1)
+                        cv2.circle(cv_image, (int(self.x + x_off), int(self.y + y_off)), 3, (255, 0, 0), -1)
 
                         pose_x = (bottomLeft[0] + bottomRight[0])/2
                         pose_y = (bottomLeft[1] + bottomRight[1])/2
@@ -175,8 +187,8 @@ class ArUcoDetector(Node):
         except Exception as e:
             self.get_logger().error(e)
 
-    def align(self,image):
-        image = image[55:435,170:510]    
+    def align(self,image,margin):
+        image = image[60+margin:430-margin,175+margin:505-margin]    
         image = cv2.resize(image,(500,500))
 
         return image
