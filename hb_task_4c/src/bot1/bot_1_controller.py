@@ -16,9 +16,9 @@ class BotController(Node):
     def __init__(self):
 
         super().__init__('bot_controller')
-        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot1', 10)
+        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot2', 10)
         self.bool_publsiher = self.create_publisher(Bool, '/pen1_down',10)
-        self.subscription = self.create_subscription(Pose2D, '/pen1_pose', self.aruco_feedback_cb, 10)
+        self.subscription = self.create_subscription(Pose2D, '/pen2_pose', self.aruco_feedback_cb, 10)
         self.err_x = 0
         self.err_y = 0
         self.err_theta = 0
@@ -39,7 +39,7 @@ class BotController(Node):
         print(f"X: {x}, Y: {y}, Z: {z}")
 
 
-    def inverse_kinematics(self, chasis_velocity, desired_angle):
+    def inverse_kinematics(self, vel_x, vel_y, chasis_velocity):
         ############ ADD YOUR CODE HERE ############
 
         # INSTRUCTIONS & HELP : 
@@ -50,10 +50,15 @@ class BotController(Node):
 
         #desired_angle += math.radians(-60)
 
-        left_wheel_force_x = chasis_velocity * math.tan( math.radians(150) - desired_angle) # RED
-        right_wheel_force_x = chasis_velocity * math.tan( math.radians(30) - desired_angle) #BLUE
-        bottom_wheel_force_x = chasis_velocity * math.tan( math.radians(270) - desired_angle) #GREEN
-        print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", bottom_wheel_force_x)
+        l = 8.76 
+        w = 1
+        radius_wheel = 1.9
+
+        left_wheel_force_x = (-l*w -0.5 * (vel_x) + math.sin(math.radians(60)*vel_y)) / radius_wheel
+        right_wheel_force_x = (-l*w -0.5*(vel_x) + (-math.sin(math.radians(60))*vel_x)) / radius_wheel
+        bottom_wheel_force_x = (-l*w + vel_x) / radius_wheel
+
+        print("FORCE: Left:", left_wheel_force_x, " , Right:", right_wheel_force_x, " , Top:", bottom_wheel_force_x)
 
         left_wheel_force_x = (left_wheel_force_x/chasis_velocity)*90 + 90
         right_wheel_force_x = (right_wheel_force_x/chasis_velocity)*90 + 90
@@ -61,6 +66,8 @@ class BotController(Node):
 
         self.rpm(left_wheel_force_x,  bottom_wheel_force_x, right_wheel_force_x)
         # self.bool_publsiher.publish(0)
+
+
     
 
     def aruco_feedback_cb(self, msg):
@@ -83,8 +90,8 @@ def main(args=None):
 
     while rclpy.ok(): 
         
-        x_goal      = 40.0
-        y_goal      = 40.0
+        x_goal      = 200.0
+        y_goal      = 150.0
         theta_goal  = 0.0
 
         print("GOAL: ", x_goal, " , ", y_goal, " , ", theta_goal, "\n")
@@ -159,7 +166,7 @@ def main(args=None):
         desired_angle = ds_ang
         
         # Find the required force vectors for individual wheels from it.(Inverse Kinematics)
-        bot.inverse_kinematics(chasis_velocity, desired_angle)
+        bot.inverse_kinematics(vel_x, vel_y, chasis_velocity)
         print("VELOCITY: ", chasis_velocity, " , ", "ANGLE: ", desired_angle, " \n ")     
 
         # while rclpy.ok():
