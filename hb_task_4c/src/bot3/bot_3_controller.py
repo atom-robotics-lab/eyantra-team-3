@@ -16,9 +16,9 @@ class BotController(Node):
     def __init__(self):
 
         super().__init__('bot_controller')
-        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot1', 10)
-        self.bool_publsiher = self.create_publisher(Bool, '/pen1_down',10)
-        self.subscription = self.create_subscription(Pose2D, '/pen1_pose', self.aruco_feedback_cb, 10)
+        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot3', 10)
+        self.bool_publsiher = self.create_publisher(Bool, '/pen3_down',10)
+        self.subscription = self.create_subscription(Pose2D, '/pen3_pose', self.aruco_feedback_cb, 10)
         self.err_x = 0
         self.err_y = 0
         self.err_theta = 0
@@ -82,9 +82,9 @@ class BotController(Node):
         ############################################
 
     def get_next_pose(point)
-        #Red
-        goals = [(450, 250),(449, 208),(448, 170),(445, 138),(442, 114),(437, 102),(432, 100),(426, 111),(419, 132),(411, 162),(402, 199),(393, 240),(383, 282),(372, 321),(361, 355),(349, 380),(337, 395),(324, 399),(311, 392),(297, 373),(283, 344),(270, 308),(256, 268),(242, 226),(228, 186),(214, 151),(200, 124),(187, 106),(174, 100),(161, 105),(149, 121)]
-        
+        #Blue
+        goals = [(149, 379),(162, 395),(175, 399),(188, 392),(201, 374),(215, 345),(229, 310),(243, 270),(257, 228),(271, 188),(285, 152),(298, 124),(312, 106),(325, 100),(338, 104),(350, 120),(362, 147),(373, 181),(384, 220),(394, 262),(403, 303),(412, 340),(420, 369),(426, 390),(433, 399),(438, 397),(442, 383),(445, 359),(448, 326),(449, 288),(449, 246)]
+
         return goals[point][0],goals[point][1]
 
 def main(args=None):
