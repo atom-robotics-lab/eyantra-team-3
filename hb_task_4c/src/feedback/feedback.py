@@ -119,30 +119,36 @@ class ArUcoDetector(Node):
                     cv_x *= (250/225)
                     cv_y *= (250/225)
 
+
                     cv_x += 250
                     cv_y += 250
 
                     #calc theta
-                    dx = bottomLeft[0] - bottomRight[0]
-                    dy = bottomLeft[1] - bottomRight[1]   
+                    dx = topLeft[0] - bottomLeft[0] 
+                    dy = topLeft[1] - bottomLeft[1] 
                     
-                    if dx!=0:                        
-                        self.theta = -math.atan(dy/dx) *1.05
-                        if self.theta<0:
+                    if dx != 0:                        
+                        self.theta = math.atan(dy/dx) * 1.05
+                        if topLeft[0] < bottomLeft[0] and topLeft[1] > bottomLeft[1] :
                             self.theta = math.pi + self.theta
+                        
+                        elif topLeft[0] < bottomLeft[0] and topLeft[1] < bottomLeft[1] :
+                            self.theta = -math.pi + self.theta
+                        # if self.theta<0:
+                        #     self.theta =  - (math.pi + self.theta)
 
-                        if bottomLeft[1]<bottomRight[1]:
-                            self.theta += math.pi
+                        # if bottomLeft[1]<bottomRight[1]:
+                        #     self.theta += math.pi
                     else:
-                        self.theta = 0.0
+                        self.theta = math.radians(90)
 
                     if markerID in [1,2,3]:
 
                         pose_msg = Pose2D()
 
                         pen_dist = 7.5
-                        x_off = pen_dist * 2 * math.sin(self.theta)
-                        y_off = pen_dist * 2 * math.cos(self.theta)
+                        x_off = -pen_dist * 2 * math.cos(self.theta)
+                        y_off = -pen_dist * 2 * math.sin(self.theta)
 
                         print(f"{markerID} : x : {cv_x} y : {cv_y}")
 
@@ -180,7 +186,7 @@ class ArUcoDetector(Node):
             except Exception as e:
                 print(e)    
 
-            #cv2.imshow("Image", cv2.resize(cv_image, (500, 500)))
+            #cv2.imshow("Image", cv2.resi-ze(cv_image, (500, 500)))
             cv2.imshow("Image",cv_image)
             cv2.waitKey(1)
         
@@ -242,9 +248,9 @@ class ArUcoDetector(Node):
 
         # self.ids=[1,2,3,4,8,10,12]
         #Test values
-        self.x = 0.0
-        self.y = 0.0
-        self.theta = 0.0
+        # self.x = 0.0
+        # self.y = 0.0
+        # self.theta = 0.0
 
         #self.image_callback()
 

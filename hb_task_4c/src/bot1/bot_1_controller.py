@@ -39,7 +39,7 @@ class BotController(Node):
         print(f"X: {x}, Y: {y}, Z: {z}")
 
 
-    def inverse_kinematics(self, vel_x, vel_y, chasis_velocity):
+    def inverse_kinematics(self, vel_x, vel_y, chasis_velocity, theta):
         ############ ADD YOUR CODE HERE ############
 
         # INSTRUCTIONS & HELP : 
@@ -51,20 +51,20 @@ class BotController(Node):
         #desired_angle += math.radians(-60)
 
         l = 8.76 
-        w = 1
+        w = 0
         radius_wheel = 1.9
 
-        left_wheel_force_x = (-l*w -0.5 * (vel_x) + math.sin(math.radians(60)*vel_y)) / radius_wheel
-        right_wheel_force_x = (-l*w -0.5*(vel_x) + (-math.sin(math.radians(60))*vel_x)) / radius_wheel
-        bottom_wheel_force_x = (-l*w + vel_x) / radius_wheel
+        left_wheel_force_x = (-l*w - (math.cos(math.radians(60 + theta))) * (vel_x) + math.sin(math.radians(60 + theta)*vel_y)) / radius_wheel
+        right_wheel_force_x = (-l*w - (math.cos(math.radians(60 + theta))) * (vel_x) + (-math.sin(math.radians(60 + theta))*vel_y)) / radius_wheel
+        top_wheel_force_x = (-l*w + vel_x) / radius_wheel
 
-        print("FORCE: Left:", left_wheel_force_x, " , Right:", right_wheel_force_x, " , Top:", bottom_wheel_force_x)
+        print("FORCE: Left:", left_wheel_force_x, " , Right:", right_wheel_force_x, " , Top:", top_wheel_force_x)
 
         left_wheel_force_x = (left_wheel_force_x/chasis_velocity)*90 + 90
         right_wheel_force_x = (right_wheel_force_x/chasis_velocity)*90 + 90
-        bottom_wheel_force_x = (bottom_wheel_force_x/chasis_velocity)*90 + 90  
+        top_wheel_force_x = (top_wheel_force_x/chasis_velocity)*90 + 90  
 
-        self.rpm(left_wheel_force_x,  bottom_wheel_force_x, right_wheel_force_x)
+        self.rpm(top_wheel_force_x,  right_wheel_force_x, left_wheel_force_x)
         # self.bool_publsiher.publish(0)
 
 
@@ -90,8 +90,8 @@ def main(args=None):
 
     while rclpy.ok(): 
         
-        x_goal      = 200.0
-        y_goal      = 150.0
+        x_goal      = 500.0
+        y_goal      = 500.0
         theta_goal  = 0.0
 
         print("GOAL: ", x_goal, " , ", y_goal, " , ", theta_goal, "\n")
@@ -109,15 +109,12 @@ def main(args=None):
         #         break
         
 
-        kp = 0.5
+        kp = 1.2
 
-        # if( bot.err_x <= 1.0 or bot.err_y <= 1.0):
-        #     kp = 15.0
-
-        if( abs(bot.err_x) <= 5.0 and abs(bot.err_y) <= 5.0):
-            avg_error =  (abs(bot.err_x) + abs(bot.err_y)) / 2.0
-            if (avg_error != 0.0):
-                kp = 6.9/(avg_error ** 1.8)
+        # if( abs(bot.err_x) <= 5.0 and abs(bot.err_y) <= 5.0):
+        #     avg_error =  (abs(bot.err_x) + abs(bot.err_y)) / 2.0
+        #     if (avg_error != 0.0):
+        #         kp = 6.9/(avg_error ** 1.8)
 
         # if( abs(bot.err_x) <= 1.0 or abs(bot.err_y) <= 1.0):
         #     kp = 2.8
@@ -166,7 +163,7 @@ def main(args=None):
         desired_angle = ds_ang
         
         # Find the required force vectors for individual wheels from it.(Inverse Kinematics)
-        bot.inverse_kinematics(vel_x, vel_y, chasis_velocity)
+        bot.inverse_kinematics(vel_x, vel_y, chasis_velocity, bot.hola_theta)
         print("VELOCITY: ", chasis_velocity, " , ", "ANGLE: ", desired_angle, " \n ")     
 
         # while rclpy.ok():
