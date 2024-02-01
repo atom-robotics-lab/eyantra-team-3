@@ -29,8 +29,8 @@ class HBController(Node):
 
         # Initialise the required variables
         # hexagon shape , triangle , rectangle
-        self.bot_1_x = [250,175,125,100,125,175,200, 300,400,300,400, 200,400,400,200,200]
-        self.bot_1_y = [25  0,200,200,150,100,100,150, 100,100,200,100, 300,300,400,400,300]
+        self.bot_1_x = [200,175,125,100,125,175,200, 300,400,300,400, 200,400,400,200,200]
+        self.bot_1_y = [150,200,200,150,100,100,150, 100,100,200,100, 300,300,400,400,300]
         self.bot_1_theta = 0.0
 
         # Initialze Publisher and Subscriber
@@ -76,14 +76,14 @@ class HBController(Node):
 
         theta_val = hola_theta - 90
         
-        w = 0  # omega of bot 
+        w = theta_val/10  # omega of bot 
 
         #left_wheel_force_x = -vel[0]*math.sin(math.radians(30)+hola_theta) - vel[1]*math.cos(math.radians(30) + hola_theta) + l*w
         #right_wheel_force_x = -vel[0]*math.cos(math.radians(90) - hola_theta) + vel[1]*math.sin(math.radians(90) - hola_theta) + l*w
         #top_wheel_force_x = vel[0] + l*w #GREEN
         left_wheel_force_x = -l*w -math.cos(math.radians(60)+ theta_val)*(vel[0]) + math.sin(math.radians(60)+theta_val)*vel[1]
         right_wheel_force_x = -l*w -math.cos(math.radians(60) + (-1)*theta_val)*(vel[0]) + (-math.sin(math.radians(60)+theta_val)*vel[1])
-        top_wheel_force_x = -l*w + vel[0]
+        top_wheel_force_x = -l*w + math.cos(math.radians(-theta_val))*vel[0] + math.sin(math.radians(-theta_val))*vel[1]
         print("FORCE: Left:", left_wheel_force_x*0.52631, " , Right:", right_wheel_force_x*0.52631, " , Top:", top_wheel_force_x*0.52631)
 
         #wrench.force.y = round(left_wheel_force_x, 2)
@@ -158,17 +158,8 @@ class HBController(Node):
 
 
 
-"""
-        for waypoint_pose in msg.poses:
-            self.bot_1_x.append(waypoint_pose.position.x)
-            self.bot_1_y.append(waypoint_pose.position.y)
 
-            orientation_q = waypoint_pose.orientation
-            orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
-            theta_goal = euler_from_quaternion (orientation_list)[2]
-            #theta_goals.append(theta_goal)
-            self.bot_1_theta=theta_goal
-"""
+
     
  
     
