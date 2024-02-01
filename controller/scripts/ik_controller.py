@@ -81,9 +81,9 @@ class HBController(Node):
         #left_wheel_force_x = -vel[0]*math.sin(math.radians(30)+hola_theta) - vel[1]*math.cos(math.radians(30) + hola_theta) + l*w
         #right_wheel_force_x = -vel[0]*math.cos(math.radians(90) - hola_theta) + vel[1]*math.sin(math.radians(90) - hola_theta) + l*w
         #top_wheel_force_x = vel[0] + l*w #GREEN
-        left_wheel_force_x = -l*w -math.cos(math.radians(60)+ theta_val)*(vel[0]) + math.sin(math.radians(60)+theta_val)*vel[1]
-        right_wheel_force_x = -l*w -math.cos(math.radians(60) + (-1)*theta_val)*(vel[0]) + (-math.sin(math.radians(60)+theta_val)*vel[1])
-        top_wheel_force_x = -l*w + math.cos(math.radians(-theta_val))*vel[0] + math.sin(math.radians(-theta_val))*vel[1]
+        left_wheel_force_x = -l*w -math.cos(math.radians(60)+ math.radians(theta_val))*(vel[0]) + math.sin(math.radians(60)+math.radians(theta_val))*vel[1]
+        right_wheel_force_x = -l*w -math.cos(math.radians(60) + (-1)*math.radians(theta_val))*(vel[0]) + (-math.sin(math.radians(60)+math.radians(theta_val))*vel[1])
+        top_wheel_force_x = -l*w + math.cos(math.radians(theta_val))*vel[0] + math.sin(math.radians(theta_val))*vel[1]
         print("FORCE: Left:", left_wheel_force_x*0.52631, " , Right:", right_wheel_force_x*0.52631, " , Top:", top_wheel_force_x*0.52631)
 
         #wrench.force.y = round(left_wheel_force_x, 2)
