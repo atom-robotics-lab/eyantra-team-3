@@ -18,8 +18,6 @@ hola_theta=0
 hola_x=0
 hola_y = 0
 PI=3.14
-values90_180 = list(range(90,181))
-values0_90 = list(range(0,91))
 l = 8.76   #distance from center to wheel
 r = 1.9    # radius of wheel
 class HBController(Node):
@@ -98,7 +96,7 @@ class HBController(Node):
         hola_theta =  msg.theta
         #print("current position: ", hola_x , " ", hola_y, " ")
 
-        print(" aruco _feedback is runnung /n")
+        #print(" aruco _feedback is runnung /n")
 
     
 
