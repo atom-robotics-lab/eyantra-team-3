@@ -29,8 +29,8 @@ class HBController(Node):
 
         # Initialise the required variables
         # hexagon shape , triangle , rectangle
-        self.bot_1_x = [200,175,125,100,125,175,200, 300,400,300,400, 200,400,400,200,200]
-        self.bot_1_y = [150,200,200,150,100,100,150, 100,100,200,100, 300,300,400,400,300]
+        self.bot_1_x = [250,175,125,100,125,175,200, 300,400,300,400, 200,400,400,200,200]
+        self.bot_1_y = [25  0,200,200,150,100,100,150, 100,100,200,100, 300,300,400,400,300]
         self.bot_1_theta = 0.0
 
         # Initialze Publisher and Subscriber
@@ -72,15 +72,17 @@ class HBController(Node):
         # For maintaining control loop rate.
         self.rate = self.create_rate(100)
 
-    def inverse_kinematics(self,vel,err_position):
+    def inverse_kinematics(self,vel,err_position,hola_theta):
+
+        theta_val = hola_theta - 90
         
-        w = 1   # omega of bot 
+        w = 0  # omega of bot 
 
         #left_wheel_force_x = -vel[0]*math.sin(math.radians(30)+hola_theta) - vel[1]*math.cos(math.radians(30) + hola_theta) + l*w
         #right_wheel_force_x = -vel[0]*math.cos(math.radians(90) - hola_theta) + vel[1]*math.sin(math.radians(90) - hola_theta) + l*w
         #top_wheel_force_x = vel[0] + l*w #GREEN
-        left_wheel_force_x = -l*w -0.5*(vel[0]) + math.sin(math.radians(60))*vel[1]
-        right_wheel_force_x = -l*w -0.5*(vel[0]) + (-math.sin(math.radians(60))*vel[1])
+        left_wheel_force_x = -l*w -math.cos(math.radians(60)+ theta_val)*(vel[0]) + math.sin(math.radians(60)+theta_val)*vel[1]
+        right_wheel_force_x = -l*w -math.cos(math.radians(60) + (-1)*theta_val)*(vel[0]) + (-math.sin(math.radians(60)+theta_val)*vel[1])
         top_wheel_force_x = -l*w + vel[0]
         print("FORCE: Left:", left_wheel_force_x*0.52631, " , Right:", right_wheel_force_x*0.52631, " , Top:", top_wheel_force_x*0.52631)
 
@@ -97,30 +99,32 @@ class HBController(Node):
 
         # 
         twist_msg = Twist()
-        max_value = float(min(abs(err_position[0]),abs(err_position[1])))
+        max_value = float(max(abs(err_position[0]),abs(err_position[1])))
         #values_max = list(range(0,max_value))
         #twist_msg.angular.y = err_position[1]
         # map values between two values
 
-        left_wheel_force = left_wheel_force_x/r
-        right_wheel_force = right_wheel_force_x/r
-        top_wheel_force = top_wheel_force_x/r
-
-        left_wheel_value = 0
-        right_wheel_value = 0
-        top_wheel_value = 0
+        
 
 
 
         
         twist_msg.angular.x = max_value
 
+        # calculation for wheels force 
+        max_vel = (abs(vel[0])+abs(vel[1]))/2
+        if max_vel == 0:
+            max_vel = 1
+        wheel_vel_y = ((left_wheel_force_x/r)/max_vel)*90 +90
+        wheel_vel_x = ((right_wheel_force_x/r)/max_vel)*90 +90
+        wheel_vel_z = ((top_wheel_force_x/r)/max_vel)*90 +90
+        print("left_rpm:",wheel_vel_y,"right_rpm:",wheel_vel_x,"top_rpm:",wheel_vel_z)
 
 
 
-        twist_msg.linear.y = (left_wheel_force_x/r)
-        twist_msg.linear.x = (right_wheel_force_x/r)
-        twist_msg.linear.z = (top_wheel_force_x/r)
+        twist_msg.linear.y = wheel_vel_y
+        twist_msg.linear.x = wheel_vel_x
+        twist_msg.linear.z = wheel_vel_z
         # publish velocities
         self.publisher.publish(twist_msg)
     
@@ -197,7 +201,7 @@ def main(args=None):
         
 
 
-        kp = 1.2
+        kp = 1
         ka = 0.8
 
         if( abs(hb_controller.err_x) <= 1.0 or abs(hb_controller.err_y) <= 1.0):
@@ -216,7 +220,7 @@ def main(args=None):
         #print(err_position)
         vel = [vel_x,vel_y]
         print("vel in X: ",vel_x,"  vel in  Y : ",vel_y)
-        hb_controller.inverse_kinematics(vel,err_position)
+        hb_controller.inverse_kinematics(vel,err_position,hola_theta)
 
         
         #elif (abs(hb_controller.err_x) >= 0.5 and  abs(hb_controller.err_y) >= 0.5) :
@@ -252,6 +256,8 @@ def main(args=None):
             vel_y = 0.0
             
             count=count+1
+            
+            
             print("count value :",count)
 
         """
