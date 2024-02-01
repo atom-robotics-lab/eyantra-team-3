@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/ubuntu/microros_ws/install/micro_ros_agent/include/**",
+        "/home/ubuntu/microros_ws/install/micro_ros_msgs/include/**",
+        "/home/ubuntu/install/micro_ros_agent/include/**",
+        "/home/ubuntu/install/micro_ros_msgs/include/**",
+        "/home/ubuntu/eyantra-team-3/install/my_robot_interfaces/include/**",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/install/turtlesim/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/ubuntu/eyrc_hb/hb_task1a_ws/src/ros_tutorials/turtlesim/include/**",
+        "/home/ubuntu/microros_ws/src/uros/micro-ROS-Agent/micro_ros_agent/include/**",
+        "/home/ubuntu/src/uros/micro-ROS-Agent/micro_ros_agent/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
