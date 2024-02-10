@@ -16,9 +16,15 @@ class BotController(Node):
     def __init__(self):
 
         super().__init__('bot_controller')
+<<<<<<< HEAD
         self.publisher = self.create_publisher(Twist, '/cmd_vel/bot1', 10)
         self.bool_publsiher = self.create_publisher(Bool, '/pen1_down',10)
         self.subscription = self.create_subscription(Pose2D, '/pen1_pose', self.aruco_feedback_cb, 10)
+=======
+        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot3', 10)
+        self.bool_publsiher = self.create_publisher(Bool, '/pen1_down',10)
+        self.subscription = self.create_subscription(Pose2D, '/pen3_pose', self.aruco_feedback_cb, 10)
+>>>>>>> 2f6de9975052e3ac9071512b1c21d06929bbfe12
         self.err_x = 0
         self.err_y = 0
         self.err_theta = 0
@@ -39,7 +45,7 @@ class BotController(Node):
         print(f"X: {x}, Y: {y}, Z: {z}")
 
 
-    def inverse_kinematics(self, vel_x, vel_y, chasis_velocity):
+    def inverse_kinematics(self, vel_x, vel_y, omega, chasis_velocity):
         ############ ADD YOUR CODE HERE ############
 
         # INSTRUCTIONS & HELP : 
@@ -50,21 +56,26 @@ class BotController(Node):
 
         #desired_angle += math.radians(-60)
 
-        l = 8.76 
-        w = 1
-        radius_wheel = 1.9
+        # left_wheel_force_x = chasis_velocity * math.cos( math.radians(210) - desired_angle) # RED
+        # right_wheel_force_x = chasis_velocity * math.cos( math.radians(330) - desired_angle) #BLUE
+        # top_wheel_force_x = chasis_velocity * math.cos( math.radians(90) - desired_angle) #GREEN
+        # print("FORCE: ", left_wheel_force_x, " , ", right_wheel_force_x, " , ", top_wheel_force_x)
 
-        left_wheel_force_x = (-l*w -0.5 * (vel_x) + math.sin(math.radians(60)*vel_y)) / radius_wheel
-        right_wheel_force_x = (-l*w -0.5*(vel_x) + (-math.sin(math.radians(60))*vel_x)) / radius_wheel
-        bottom_wheel_force_x = (-l*w + vel_x) / radius_wheel
+        # left_wheel_force_x = (left_wheel_force_x/chasis_velocity)*90 + 90
+        # right_wheel_force_x = (right_wheel_force_x/chasis_velocity)*90 + 90
+        # top_wheel_force_x = (top_wheel_force_x/chasis_velocity)*90 + 90
 
-        print("FORCE: Left:", left_wheel_force_x, " , Right:", right_wheel_force_x, " , Top:", bottom_wheel_force_x)
+        top_wheel_force = (0.66 * vel_x) + (0.33 * omega)
+        right_wheel_force = (-0.33 * vel_x) + (-0.58 * vel_y) + (0.33 * omega)
+        left_wheel_force = (-0.33 * vel_x) + (0.58 * vel_y) + (0.33 * omega)
 
-        left_wheel_force_x = (left_wheel_force_x/chasis_velocity)*90 + 90
-        right_wheel_force_x = (right_wheel_force_x/chasis_velocity)*90 + 90
-        bottom_wheel_force_x = (bottom_wheel_force_x/chasis_velocity)*90 + 90  
+        #mapping for servo motors
 
-        self.rpm(left_wheel_force_x,  bottom_wheel_force_x, right_wheel_force_x)
+        left_wheel_force = (left_wheel_force/chasis_velocity)*90 + 90
+        right_wheel_force = (right_wheel_force/chasis_velocity)*90 + 90
+        top_wheel_force = (top_wheel_force/chasis_velocity)*90 + 90
+
+        self.rpm(  top_wheel_force, right_wheel_force, left_wheel_force)
         # self.bool_publsiher.publish(0)
 
     def aruco_feedback_cb(self, msg):
@@ -77,7 +88,18 @@ class BotController(Node):
         self.hola_x = msg.x
         self.hola_y = msg.y
         self.hola_theta = msg.theta
-        print("current position: ", self.hola_x , " ", self.hola_y, " ")
+
+        self.hola_x -=250
+        self.hola_y *=-1
+        self.hola_y +=250
+        # self.hola_y *-1
+
+        if (self.hola_theta <= 0):
+            -(self.hola_theta + math.radians(90))
+        
+        else :
+            self.hola_theta - math.radians(90)
+        print("current position: ", self.hola_x , " ", self.hola_y, " ", self.hola_theta)
 
         ############################################
 
@@ -108,8 +130,8 @@ def main(args=None):
 
         bot.err_x = x_goal - bot.hola_x
         bot.err_y = y_goal - bot.hola_y
-        bot.err_theta = 0
-        print("ERROR: ", bot.err_x, " , ", bot.err_y, " \n ")
+        bot.err_theta = 0 - bot.hola_theta
+        print("ERROR: ", bot.err_x, " , ", bot.err_y, " , " , bot.err_theta, " \n ")
 
         if bot.err_x <= threshold and bot.err_y <= threshold:
             print(f"Reached point no.: {point}")
@@ -117,6 +139,7 @@ def main(args=None):
             get_next_pose(point)
 
         kp = 0.5
+        ka = 0.2
 
         # if( bot.err_x <= 1.0 or bot.err_y <= 1.0):
         #     kp = 15.0
@@ -131,6 +154,8 @@ def main(args=None):
         
         vel_x = bot.err_x * kp 
         vel_y = bot.err_y * kp
+        omega = bot.err_theta * ka
+
         # Change the frame by using Rotation Matrix (If you find it required)
 
         if(abs(bot.err_x) <= 1.0 and abs(bot.err_y) <= 1.0):
@@ -150,7 +175,10 @@ def main(args=None):
             bot.send_request(bot.index)
 
         chasis_velocity = math.sqrt(abs(vel_x*vel_x) + abs(vel_y*vel_y))
-        chasis_velocity = abs(chasis_velocity) 
+        chasis_velocity = abs(chasis_velocity)
+
+        # if chasis_velocity >= 700 :
+        #     chasis_velocity = 700
 
         x = vel_x
         y = vel_y
@@ -159,21 +187,21 @@ def main(args=None):
             ang = math.atan(abs(y)/abs(x))* 180/3.14
 
         if(x<0 and y>0):  #2nd
-            ds_ang = math.radians(105-ang)
+            ds_ang = math.radians(90-ang)
             
         elif(x<0 and y<0):  #3rd
-            ds_ang = math.radians(100+ang)
+            ds_ang = math.radians(180 + ang)
             
         elif(x>0 and y<0):  #4th
-            ds_ang = math.radians(175+ang)
+            ds_ang = math.radians(270 - ang)
             
         else: #1st
-            ds_ang = math.radians(248 + ang)
+            ds_ang = math.radians(270 + ang)
 
         desired_angle = ds_ang
         
         # Find the required force vectors for individual wheels from it.(Inverse Kinematics)
-        bot.inverse_kinematics(vel_x, vel_y, chasis_velocity)
+        bot.inverse_kinematics(vel_x, vel_y, omega, chasis_velocity)
         print("VELOCITY: ", chasis_velocity, " , ", "ANGLE: ", desired_angle, " \n ")     
 
         # while rclpy.ok():

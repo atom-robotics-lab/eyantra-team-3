@@ -40,7 +40,7 @@ void subscription_callback(const void *msgin) {
 }
 
 void setup() {
-  set_microros_wifi_transports("Laxmipg4", "123456789", "192.168.0.104", 8888);
+  set_microros_wifi_transports("A.T.O.M_Labs", "atom281121", "192.168.0.18", 8888);
   Serial.begin(9600);
   servo_top.attach(27);
   servo_right.attach(26);
@@ -67,7 +67,7 @@ void setup() {
     &subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    "/cmd_vel"));
+    "/cmd_vel/bot3"));
 
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
