@@ -16,15 +16,9 @@ class BotController(Node):
     def __init__(self):
 
         super().__init__('bot_controller')
-<<<<<<< HEAD
         self.publisher = self.create_publisher(Twist, '/cmd_vel/bot1', 10)
         self.bool_publsiher = self.create_publisher(Bool, '/pen1_down',10)
         self.subscription = self.create_subscription(Pose2D, '/pen1_pose', self.aruco_feedback_cb, 10)
-=======
-        self.publisher = self.create_publisher(Twist, '/cmd_vel/bot3', 10)
-        self.bool_publsiher = self.create_publisher(Bool, '/pen1_down',10)
-        self.subscription = self.create_subscription(Pose2D, '/pen3_pose', self.aruco_feedback_cb, 10)
->>>>>>> 2f6de9975052e3ac9071512b1c21d06929bbfe12
         self.err_x = 0
         self.err_y = 0
         self.err_theta = 0
@@ -89,9 +83,10 @@ class BotController(Node):
         self.hola_y = msg.y
         self.hola_theta = msg.theta
 
-        self.hola_x -=250
-        self.hola_y *=-1
-        self.hola_y +=250
+        # self.hola_x -=250
+        # self.hola_y *=-1
+        # self.hola_y +=250
+        self.hola_x, self.hola_y = self.transform(self.hola_x,self.hola_y)
         # self.hola_y *-1
 
         if (self.hola_theta <= 0):
@@ -103,11 +98,21 @@ class BotController(Node):
 
         ############################################
 
-    def get_next_pose(point)
-        #Red
-        goals = [(450, 250),(449, 208),(448, 170),(445, 138),(442, 114),(437, 102),(432, 100),(426, 111),(419, 132),(411, 162),(402, 199),(393, 240),(383, 282),(372, 321),(361, 355),(349, 380),(337, 395),(324, 399),(311, 392),(297, 373),(283, 344),(270, 308),(256, 268),(242, 226),(228, 186),(214, 151),(200, 124),(187, 106),(174, 100),(161, 105),(149, 121)]
-        
+    def get_next_pose(self,point)
+        #Hexagoan Points
+        goals = [[200, 150], [175, 200], [125, 200], [100, 150], [125, 100], [175, 100],[200, 150]]
+        for i in range(len(goals)):
+            goals[i] = transform(goals[i][0],goals[i][1])
+
         return goals[point][0],goals[point][1]
+    
+    def transform(self,x,y):
+        x -= 250
+
+        y *= -1
+        y += 250
+
+        return x,y
 
 def main(args=None):
     rclpy.init(args=args)
@@ -136,7 +141,7 @@ def main(args=None):
         if bot.err_x <= threshold and bot.err_y <= threshold:
             print(f"Reached point no.: {point}")
             point+=1
-            get_next_pose(point)
+            self.get_next_pose(point)
 
         kp = 0.5
         ka = 0.2

@@ -77,15 +77,37 @@ class BotController(Node):
         self.hola_x = msg.x
         self.hola_y = msg.y
         self.hola_theta = msg.theta
-        print("current position: ", self.hola_x , " ", self.hola_y, " ")
+        
+        # self.hola_x -=250
+        # self.hola_y *=-1
+        # self.hola_y +=250
+        self.hola_x, self.hola_y = self.transform(self.hola_x,self.hola_y)
+        # self.hola_y *-1
+
+        if (self.hola_theta <= 0):
+            -(self.hola_theta + math.radians(90))
+        
+        else :
+            self.hola_theta - math.radians(90)
+        print("current position: ", self.hola_x , " ", self.hola_y, " ", self.hola_theta)
 
         ############################################
 
-    def get_next_pose(point)
-        #Blue
-        goals = [(149, 379),(162, 395),(175, 399),(188, 392),(201, 374),(215, 345),(229, 310),(243, 270),(257, 228),(271, 188),(285, 152),(298, 124),(312, 106),(325, 100),(338, 104),(350, 120),(362, 147),(373, 181),(384, 220),(394, 262),(403, 303),(412, 340),(420, 369),(426, 390),(433, 399),(438, 397),(442, 383),(445, 359),(448, 326),(449, 288),(449, 246)]
+    def get_next_pose(self,point)
+        #Rectangle Points: 
+        goals = [[200, 300], [400, 300], [400, 400], [200, 400], [200, 300]]
+        for i in range(len(goals)):
+            goals[i] = transform(goals[i][0],goals[i][1])
 
         return goals[point][0],goals[point][1]
+    
+    def transform(self,x,y):
+        x -= 250
+
+        y *= -1
+        y += 250
+
+        return x,y
 
 def main(args=None):
     rclpy.init(args=args)
