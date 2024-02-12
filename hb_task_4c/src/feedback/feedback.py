@@ -100,9 +100,9 @@ class ArUcoDetector(Node):
                     diff_x = center_x - 250.0
                     diff_y = center_y - 250.0
 
-                    mult_x = 500/(topRight[0] - topLeft[0])
-                    # print(topRight[0], topLeft[0])
-                    mult_y = 500/(topLeft[1] - bottomLeft[1])
+                    # mult_x = 500/(topRight[0] - topLeft[0])
+                    # # print(topRight[0], topLeft[0])
+                    # mult_y = 500/(topLeft[1] - bottomLeft[1])
 
                     # cv_x += diff_x
                     # cv_y += diff_y
@@ -113,45 +113,28 @@ class ArUcoDetector(Node):
                     self.x = cv_x
                     self.y = cv_y
 
-                    #cv_x -= 250
-                    #cv_y -= 250
+                    cv_x -= 250
+                    cv_y -= 250
 
-                    #cv_x *= (250/225)
-                    #cv_y *= (250/225)
+                    cv_x *= (250/225)
+                    cv_y *= (250/225)
 
-
-                    #cv_x += 250
-                    #cv_y += 250
+                    cv_x += 250
+                    cv_y += 250
 
                     #calc theta
-                    dx = topRight[0] - topLeft[0] 
-                    dy = topRight[1] - topLeft[1] 
+                    dx = bottomLeft[0] - bottomRight[0]
+                    dy = bottomLeft[1] - bottomRight[1]   
                     
-                    if dx != 0:              
-                        self.theta = math.atan(dy/dx) * 1.05
-                        # if topLeft[1] > bottomLeft[1] and dy == 0:
-                        #     self.theta = math.radians(-180)
-                        
-                        # if topLeft[1] < topRight[1] and topLeft[0] > topRight[1]:
-                        #     self.theta = -math.pi/2 + self.theta
-                        
-                        # elif topLeft[1] > topRight[1] and topLeft[0] > topRight[0]:
-                        #     self.theta = math.pi/2 + self.theta
+                    if dx!=0:                        
+                        self.theta = -math.atan(dy/dx) *1.05
+                        if self.theta<0:
+                            self.theta = math.pi + self.theta
 
-
-                        # if topLeft[0] < bottomLeft[0] and topLeft[1] > bottomLeft[1] :
-                        #     self.theta = math.pi + self.theta
-                        
-                        # elif topLeft[0] < bottomLeft[0] and topLeft[1] < bottomLeft[1] :
-                        #     self.theta = -math.pi + self.theta
-                        # if self.theta<0:
-                        #     self.theta =  - (math.pi + self.theta)
-
-                        # if bottomLeft[1]<bottomRight[1]:
-                        #     self.theta += math.pi
+                        if bottomLeft[1]<bottomRight[1]:
+                            self.theta += math.pi
                     else:
-                        self.theta = math.radians(90)
-
+                        self.theta = 0.0
 
                     
                     if markerID in [1,2,3]:
@@ -159,33 +142,53 @@ class ArUcoDetector(Node):
                         pose_msg = Pose2D()
 
                         pen_dist = 7.5
-                        x_off = pen_dist * math.cos(self.theta)
-                        y_off = pen_dist * math.sin(self.theta)
+                        x_off = pen_dist * 2 * math.sin(self.theta)
+                        y_off = pen_dist * 2 * math.cos(self.theta)
 
                         print(f"{markerID} : x : {cv_x} y : {cv_y}")
 
-                        pose_msg.x = float(cv_x + x_off)
-                        pose_msg.y = float(cv_y + y_off)
+                        pose_msg.x = cv_x
+                        pose_msg.y = cv_y
+
+                        # pose_msg.x = float(cv_x + x_off)
+                        # pose_msg.y = float(cv_y + y_off)
+
+                        if self.theta > math.radians(180):
+                            self.theta = math.radians(360) - self.theta
+                        
+                        if (bottomLeft[0] < bottomRight[0] and bottomLeft[1] < bottomRight[1]) :
+                            self.theta *= -1
+
+                        if (bottomLeft[0] > bottomRight[0] and bottomLeft[1] < bottomRight[1]):  
+                            self.theta *= -1
+
                         pose_msg.theta = self.theta
+
+
+                        cv2.circle(cv_image, (int(self.x + x_off), int(self.y + y_off)), 3, (255, 0, 0), -1)
+                        # self.points.append((int(self.x + x_off), int(self.y + y_off)))
 
                         # Publish pose_msg based on markerID
                         if markerID == 1:
                             self.pen1_pub.publish(pose_msg)
+                            self.red.append((int(self.x + x_off), int(self.y + y_off)))
+
                         elif markerID == 2:
                             self.pen2_pub.publish(pose_msg)
+                            self.green.append((int(self.x + x_off), int(self.y + y_off)))
                         elif markerID == 3:
                             self.pen3_pub.publish(pose_msg)
-
-                        cv2.circle(cv_image, (int(self.x + x_off), int(self.y + y_off)), 3, (255, 0, 0), -1)
+                            self.blue.append((int(self.x + x_off), int(self.y + y_off)))
 
                         pose_x = (bottomLeft[0] + bottomRight[0])/2
                         pose_y = (bottomLeft[1] + bottomRight[1])/2
-                         
+                        
                         # cv2.circle(cv_image, (int(pose_x), int(pose_y)), 3, (255, 0, 0), -1)
 
                     # draw the ArUco marker ID on the image
-                   
                     cv2.putText(cv_image,str(markerID), (topLeft[0], topLeft[1] - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
+                    
+                    self.draw_points(cv_image, self.blue, self.green, self.red)
                     # print("[INFO] ArUco marker ID: {}".format(markerID))
 
                     # rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, camera_matrix, distortion_coefficients)
@@ -194,25 +197,38 @@ class ArUcoDetector(Node):
                     #     for rvec, tvec in zip(rvecs, tvecs):
                     #         rotation_matrix, _ = cv2.Rodrigues(rvec)
                     #         yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
-                    #         print("Yaw angle:", np.degrees(yaw))
-
-                print("THETA: ", self.theta)
+                    #         pr
+                    # int("Yaw angle:", np.degrees(yaw))
+    
             except Exception as e:
                 print(e)    
 
-            #cv2.imshow("Image", cv2.resi-ze(cv_image, (500, 500)))
+            #cv2.imshow("Image", cv2.resize(cv_image, (500, 500)))
             cv2.imshow("Image",cv_image)
-            cv2.waitKey(1)
+            key = cv2.waitKey(1) & 0xFF
+
+            if key == ord('r'):
+                self.points = []
         
         except Exception as e:
             self.get_logger().error(e)
 
     def align(self,image,margin):
-        image = image[60+margin:430-margin,175+margin:505-margin]    
+        image = image[70+margin:415-margin,165+margin:475-margin]    
         image = cv2.resize(image,(500,500))
 
         return image
-            
+    
+    def draw_points(self, frame, blue, green, red):
+        for point in blue:
+            cv2.circle(frame, tuple(point), 2, (255, 0, 0), -1)
+
+        for point in green:
+            cv2.circle(frame, tuple(point), 2, (0, 255, 0), -1)
+        
+        for point in red:
+            cv2.circle(frame, tuple(point), 2, (0, 0, 255), -1)
+                
     def undistort(self,image):
         image = image[0:480,40:640]
 
@@ -262,10 +278,13 @@ class ArUcoDetector(Node):
 
         # self.ids=[1,2,3,4,8,10,12]
         #Test values
-        # self.x = 0.0
-        # self.y = 0.0
-        # self.theta = 0.0
+        self.x = 0.0
+        self.y = 0.0
+        self.theta = 0.0
 
+        self.blue = []
+        self.green = []
+        self.red = []
         #self.image_callback()
 
 def main(args=None):

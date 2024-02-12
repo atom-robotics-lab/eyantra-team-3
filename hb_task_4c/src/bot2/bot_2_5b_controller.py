@@ -48,14 +48,14 @@ class BotController(Node):
             val = 90- val
         return val
     
-    def get_next_pose(self,point) :
-        #Rectangle Points: 
-        goals = [[200, 300], [400, 300], [400, 400], [200, 400], [200, 300]]
-        for i in range(len(goals)):
-            goals[i] = self.transform(goals[i][0],goals[i][1])
-
-        return goals[point][0],goals[point][1]
-    
+    def get_next_pose(self, point) :
+        #Green
+        self.goals = [(150, 120),(138, 145),(126, 179),(116, 219),(106, 260),(96, 301),(88, 338),(80, 368),(73, 389),(67, 399),(61, 397),(57, 384),(54, 360),(51, 328),(50, 289),(50, 248),(50, 206),(52, 168),(54, 137),(57, 114),(62, 101),(67, 101),(73, 111),(80, 133),(88, 164),(97, 201),(106, 242),(116, 284),(127, 323),(139, 356),(150, 381)]
+        for i in range(len(self.goals)):
+            self.goals[i] = self.transform(self.goals[i][0],self.goals[i][1])
+            
+        return self.goals[point][0], self.goals[point][1]
+        
     def transform(self,x,y):
         x -= 250
 
@@ -65,7 +65,7 @@ class BotController(Node):
         return x,y
 
     
-    def inverse_kinematics(self, vel_x, vel_y, omega, chasis_velocity, max_force):
+    def inverse_kinematics(self, vel_x, vel_y, omega, speed_factor, max_force):
         ############ ADD YOUR CODE HERE ############
 
         # INSTRUCTIONS & HELP : 
@@ -74,26 +74,26 @@ class BotController(Node):
         #	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
         ############################################   
 
-        kp_t = 1.0
-        kp_r = 0.7
+        kp_t = 2.0
+        kp_r = 0.85
         kp_l = 1.0
 
         # kp_t = 1.0
         # kp_r = 1.23
         # kp_l = 3.2
 
-        if (vel_x < 0 and vel_y < 0 ):
-            kp_t = 0.98
-            kp_r = 3.4
-            kp_l = 1.2
+        # if (vel_x < 0 and vel_y < 0 ):
+        #     kp_t = 2.0
+        #     kp_r = 0.85
+        #     kp_l = 1.1
 
-        top_wheel_force = ((0.66 * vel_x) + (0.33 * omega) ) * kp_t
+        top_wheel_force = ((0.66 * vel_x) + (0.33 * omega) ) * kp_t * speed_factor
         # top_wheel_force = self.servo_map(top_wheel_force) * 1.0 # to convert into float value
         
-        right_wheel_force = ((-0.33 * vel_x) + (-0.58 * vel_y) + (0.33 * omega)) * kp_r
+        right_wheel_force = ((-0.33 * vel_x) + (-0.58 * vel_y) + (0.33 * omega)) * kp_r * speed_factor
         # right_wheel_force = self.servo_map(right_wheel_force) * 1.0
 
-        left_wheel_force = ((-0.33 * vel_x) + (0.58 * vel_y) + (0.33 * omega)) * kp_l
+        left_wheel_force = ((-0.33 * vel_x) + (0.58 * vel_y) + (0.33 * omega)) * kp_l * speed_factor
         # left_wheel_force = self.servo_map(left_wheel_force) * 1.0 
 
         print("force: ",top_wheel_force, ", ", right_wheel_force, ", " , left_wheel_force )
@@ -148,11 +148,20 @@ def main(args=None):
     point = 0
     while rclpy.ok(): 
         
-        threshold = 5.0
+        threshold = 8.0
         theta_goal  = 0.0
-        x_goal, y_goal = -200, 0 #bot.get_next_pose(point)
+        x_goal, y_goal = bot.get_next_pose(point)
         
+        bool_msg = Bool()  # Create a std_msgs.msg.Bool message object
+        bool_msg.data = True  # Set its value to False
+        bot.bool_publsiher.publish(bool_msg)  # Publish the message
         
+        # time.sleep(1)
+        
+        # bool_msg.data = True  # Update the value to True
+        # bot.bool_publsiher.publish(bool_msg)  # Publish the updated message
+        
+
         print("GOAL: ", x_goal, " , ", y_goal, " , ", theta_goal, "\n")
         print("CURRENT POSITION: ", bot.hola_x, " , ", bot.hola_y, " , ", bot.hola_theta, "\n")
         ####################################################
@@ -165,30 +174,35 @@ def main(args=None):
         print("ERROR: ", bot.err_x, " , ", bot.err_y, " , " , bot.err_theta, " \n ")
 
         if abs(bot.err_x) <= threshold and abs(bot.err_y) <= threshold:
+            # print("reached")
+            # bot.rpm(90.0, 90.0, 90.0)
+            # break
             print(f"Reached point no.: {point}")
             point+=1
+            bot.get_next_pose(point)
+            if point == len(bot.goals) -1:
+                bool_msg = False
+                bot.bool_publsiher.publish(bool_msg)
+                print("Bot Movement Stopped")
+                break
             continue
-            # bot.get_next_pose(point)
-
-        
-        
-
-        # if bot.err_x <= 2.0 and bot.err_y <= 2.0:
-        #         break
-        
 
         kp = 10.0
-        ka = 700.0
+        ka = 1000.0
+        speed_factor = 1.0
+        
+        if abs(bot.err_x) <= 27.0 or abs(bot.err_y) <= 27.0:
+                speed_factor = 3.2
 
         max_force  = kp * 250 * math.sqrt(2)
 
         # if( bot.err_x <= 1.0 or bot.err_y <= 1.0):
         #     kp = 15.0
 
-        if( abs(bot.err_x) <= 5.0 and abs(bot.err_y) <= 5.0):
-            avg_error =  (abs(bot.err_x) + abs(bot.err_y)) / 2.0
-            if (avg_error != 0.0):
-                kp = 6.9/(avg_error ** 1.8)
+        # if( abs(bot.err_x) <= 5.0 and abs(bot.err_y) <= 5.0):
+        #     avg_error =  (abs(bot.err_x) + abs(bot.err_y)) / 2.0
+        #     if (avg_error != 0.0):
+        #         kp = 6.9/(avg_error ** 1.8)
 
         # if( abs(bot.err_x) <= 1.0 or abs(bot.err_y) <= 1.0):
         #     kp = 2.8
@@ -206,7 +220,7 @@ def main(args=None):
         #     chasis_velocity = 700
 
         # Find the required force vectors for individual wheels from it.(Inverse Kinematics)
-        bot.inverse_kinematics(vel_x, vel_y, omega, chasis_velocity, max_force)
+        bot.inverse_kinematics(vel_x, vel_y, omega, speed_factor, max_force)
         print("VELOCITY: ", chasis_velocity, " , ", "ANGLE: ",  omega)     
 
         # while rclpy.ok():
@@ -214,7 +228,6 @@ def main(args=None):
         # time.sleep(1)
         rclpy.spin_once(bot)
 
-    bot.rpm(90, 90, 90)
     bot.destroy_node()
     rclpy.shutdown()
 
