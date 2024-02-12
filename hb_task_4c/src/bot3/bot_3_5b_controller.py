@@ -125,7 +125,7 @@ class BotController(Node):
         # global hola_x, hola_y, hola_theta
         self.hola_x = msg.x
         self.hola_y = msg.y
-        self.hola_theta = msg.theta + (-1.58)
+        self.hola_theta = msg.theta + math.pi/2
 
         self.hola_x -=250
         self.hola_y *=-1

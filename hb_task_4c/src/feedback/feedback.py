@@ -162,7 +162,7 @@ class ArUcoDetector(Node):
                         if (bottomLeft[0] > bottomRight[0] and bottomLeft[1] < bottomRight[1]):  
                             self.theta *= -1
 
-                        pose_msg.theta = self.theta
+                        pose_msg.theta = self.theta - math.pi/2
 
 
                         cv2.circle(cv_image, (int(self.x + x_off), int(self.y + y_off)), 3, (255, 0, 0), -1)
