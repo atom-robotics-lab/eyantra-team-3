@@ -41,7 +41,7 @@ class BotController(Node):
         print(f"X: {x}, Y: {y}, Z: {z}")
 
 
-    def servo_map(self, current_force, max_force= 0.5 * 250 * math.sqrt(2), servo_min=90, servo_max=180, min_force= - kp * 250 * math.sqrt(2)):
+    def servo_map(self, current_force, max_force= 0.5 * 250 * math.sqrt(2), servo_min=90, servo_max=180, min_force= - 250 * math.sqrt(2)):
         val = int((current_force - min_force) * (servo_max - servo_min) / (max_force - min_force) + servo_min)
         if current_force < 0 :
             val =  abs(90 - val)
@@ -50,7 +50,7 @@ class BotController(Node):
     
     def get_next_pose(self, point) :
         #Green
-        self.goals = [(150, 120),(138, 145),(126, 179),(116, 219),(106, 260),(96, 301),(88, 338),(80, 368),(73, 389),(67, 399),(61, 397),(57, 384),(54, 360),(51, 328),(50, 289),(50, 248),(50, 206),(52, 168),(54, 137),(57, 114),(62, 101),(67, 101),(73, 111),(80, 133),(88, 164),(97, 201),(106, 242),(116, 284),(127, 323),(139, 356),(150, 381)]
+        self.goals = [(450,250)]#[(150, 120),(138, 145),(126, 179),(116, 219),(106, 260),(96, 301),(88, 338),(80, 368),(73, 389),(67, 399),(61, 397),(57, 384),(54, 360),(51, 328),(50, 289),(50, 248),(50, 206),(52, 168),(54, 137),(57, 114),(62, 101),(67, 101),(73, 111),(80, 133),(88, 164),(97, 201),(106, 242),(116, 284),(127, 323),(139, 356),(150, 381)]
         for i in range(len(self.goals)):
             self.goals[i] = self.transform(self.goals[i][0],self.goals[i][1])
             
@@ -187,8 +187,8 @@ def main(args=None):
                 break
             continue
 
-        kp = 10.0
-        ka = 1000.0
+        kp = 2.0
+        ka = 15#1000.0
         speed_factor = 1.0
         
         if abs(bot.err_x) <= 27.0 or abs(bot.err_y) <= 27.0:

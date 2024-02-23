@@ -38,7 +38,7 @@ class ArUcoDetector(Node):
             image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
 
             #cv_image = self.undistort(self,image)
-            cv_image = self.align(image,8)
+            cv_image = self.align(image,0)
             
             # cv2.imshow("Image",self.align(cv_image))
             # cv2.waitKey(1)
@@ -48,7 +48,7 @@ class ArUcoDetector(Node):
 
             aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 
-            parameters = aruco.DetectorParameters_create()
+            parameters = aruco.DetectorParameters()
             #Find markers
             (corners, ids, rejected) = aruco.detectMarkers(cv_image,aruco_dict, parameters=parameters)
 
@@ -162,7 +162,7 @@ class ArUcoDetector(Node):
                         if (bottomLeft[0] > bottomRight[0] and bottomLeft[1] < bottomRight[1]):  
                             self.theta *= -1
 
-                        pose_msg.theta = self.theta - math.pi/2
+                        pose_msg.theta = self.theta
 
 
                         cv2.circle(cv_image, (int(self.x + x_off), int(self.y + y_off)), 3, (255, 0, 0), -1)
@@ -176,6 +176,7 @@ class ArUcoDetector(Node):
                         elif markerID == 2:
                             self.pen2_pub.publish(pose_msg)
                             self.green.append((int(self.x + x_off), int(self.y + y_off)))
+
                         elif markerID == 3:
                             self.pen3_pub.publish(pose_msg)
                             self.blue.append((int(self.x + x_off), int(self.y + y_off)))
@@ -208,13 +209,19 @@ class ArUcoDetector(Node):
             key = cv2.waitKey(1) & 0xFF
 
             if key == ord('r'):
-                self.points = []
-        
+                self.red = []
+
+            if key == ord('b'):
+                self.blue = []
+
+            if key == ord('g'):
+                self.green = []
+
         except Exception as e:
             self.get_logger().error(e)
 
     def align(self,image,margin):
-        image = image[70+margin:415-margin,165+margin:475-margin]    
+        image = image[40+margin:395-margin,165+margin:475-margin]    
         image = cv2.resize(image,(500,500))
 
         return image

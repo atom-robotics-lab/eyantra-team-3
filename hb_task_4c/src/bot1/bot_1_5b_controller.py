@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -41,7 +39,7 @@ class BotController(Node):
         print(f"X: {x}, Y: {y}, Z: {z}")
 
 
-    def servo_map(self, current_force, max_force= 0.5 * 250 * math.sqrt(2), servo_min=90, servo_max=180, min_force= - kp * 250 * math.sqrt(2)):
+    def servo_map(self, current_force, max_force= 0.5 * 250 * math.sqrt(2), servo_min=90, servo_max=180, min_force= -250 * math.sqrt(2)):
         val = int((current_force - min_force) * (servo_max - servo_min) / (max_force - min_force) + servo_min)
         if current_force < 0 :
             val =  abs(90 - val)
@@ -50,7 +48,7 @@ class BotController(Node):
     
     def get_next_pose(self, point) :
         #Red
-        self.goals = [(450, 250),(449, 208),(448, 170),(445, 138),(442, 114),(437, 102),(432, 100),(426, 111),(419, 132),(411, 162),(402, 199),(393, 240),(383, 282),(372, 321),(361, 355),(349, 380),(337, 395),(324, 399),(311, 392),(297, 373),(283, 344),(270, 308),(256, 268),(242, 226),(228, 186),(214, 151),(200, 124),(187, 106),(174, 100),(161, 105),(149, 121)]
+        self.goals = [(450, 250),(449, 208),(448, 170),(445, 138),(442, 114),(437, 102),(432, 100),(426, 111),(424,120),(420,122),(419, 132),(411, 162),(402, 199),(393, 240),(383, 282),(372, 321),(361, 355),(349, 380),(337, 395),(324, 399),(311, 392),(297, 373),(283, 344),(270, 308),(256, 268),(242, 226),(228, 186),(214, 151),(200, 124),(187, 106),(174, 100),(161, 105),(149, 121)]
         for i in range(len(self.goals)):
             self.goals[i] = self.transform(self.goals[i][0],self.goals[i][1])
             
@@ -84,9 +82,9 @@ class BotController(Node):
         #	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
         ############################################   
 
-        kp_t = 2.0
-        kp_r = 0.85
-        kp_l = 1.0
+        kp_t = 2.63#2.0
+        kp_r = 0.60#0.70#0.85
+        kp_l = 2.29#1.0
 
         # kp_t = 1.0
         # kp_r = 1.23
@@ -135,7 +133,7 @@ class BotController(Node):
         # global hola_x, hola_y, hola_theta
         self.hola_x = msg.x
         self.hola_y = msg.y
-        self.hola_theta = msg.theta + math.pi/2
+        self.hola_theta = msg.theta + 1.58
 
         self.hola_x -=250
         self.hola_y *=-1
@@ -198,13 +196,13 @@ def main(args=None):
             continue
 
         kp = 10.0
-        ka = 1000.0
+        ka = 25.0
         speed_factor = 1.0
         
         if abs(bot.err_x) <= 25.0 or abs(bot.err_y) <= 25.0:
                 speed_factor = 3.1
 
-        max_force  = kp * 250 * math.sqrt(2)
+        max_force  = kp*250 * math.sqrt(2)
 
         # if( bot.err_x <= 1.0 or bot.err_y <= 1.0):
         #     kp = 15.0
@@ -243,3 +241,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+

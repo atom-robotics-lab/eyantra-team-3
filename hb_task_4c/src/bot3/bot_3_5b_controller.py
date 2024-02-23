@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -50,7 +48,7 @@ class BotController(Node):
     
     def get_next_pose(self, point) :
         #Blue
-        self.goals = [(149, 379),(162, 395),(175, 399),(188, 392),(201, 374),(215, 345),(229, 310),(243, 270),(257, 228),(271, 188),(285, 152),(298, 124),(312, 106),(325, 100),(338, 104),(350, 120),(362, 147),(373, 181),(384, 220),(394, 262),(403, 303),(412, 340),(420, 369),(426, 390),(433, 399),(438, 397),(442, 383),(445, 359),(448, 326),(449, 288),(449, 246)]
+        self.goals = [(250,250) , (300,250), (350,250), (400,250), (450,250)]#[(149, 379),(162, 395),(175, 399),(188, 392),(201, 374),(215, 345),(229, 310),(243, 270),(257, 228),(271, 188),(285, 152),(298, 124),(312, 106),(325, 100),(338, 104),(350, 120),(362, 147),(373, 181),(384, 220),(394, 262),(403, 303),(412, 340),(420, 369),(426, 390),(433, 399),(438, 397),(442, 383),(445, 359),(448, 326),(449, 288),(449, 246)]
         for i in range(len(self.goals)):
             self.goals[i] = self.transform(self.goals[i][0],self.goals[i][1])
 
@@ -125,7 +123,7 @@ class BotController(Node):
         # global hola_x, hola_y, hola_theta
         self.hola_x = msg.x
         self.hola_y = msg.y
-        self.hola_theta = msg.theta + math.pi/2
+        self.hola_theta = msg.theta + (-1.58)
 
         self.hola_x -=250
         self.hola_y *=-1
@@ -185,14 +183,14 @@ def main(args=None):
                 bot.bool_publsiher.publish(bool_msg)
             continue
 
-        kp = 10.0
-        ka = 1000.0
+        kp = 2
+        ka = 15#1000.0
         speed_factor = 1.0
         
         if abs(bot.err_x) <= 25.0 or abs(bot.err_y) <= 25.0:
                 speed_factor = 2.9
 
-        max_force  = kp * 250 * math.sqrt(2)
+        max_force  = 250 * math.sqrt(2) #* ka
 
         # if( bot.err_x <= 1.0 or bot.err_y <= 1.0):
         #     kp = 15.0
@@ -231,3 +229,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
