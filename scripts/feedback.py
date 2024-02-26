@@ -114,14 +114,14 @@ class ArUcoDetector(Node):
                     self.x = cv_x
                     self.y = cv_y
 
-                    cv_x -= 250
-                    cv_y -= 250
+                    # cv_x -= 250
+                    # cv_y -= 250
 
-                    cv_x *= (250/225)
-                    cv_y *= (250/225)
+                    # cv_x *= (250/225)
+                    # cv_y *= (250/225)
 
-                    cv_x += 250
-                    cv_y += 250
+                    # cv_x += 250
+                    # cv_y += 250
 
                     #calc theta
                     dx = bottomLeft[0] - bottomRight[0]
