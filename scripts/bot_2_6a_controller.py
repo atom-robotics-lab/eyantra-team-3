@@ -29,6 +29,7 @@ class BotController(Node):
         self.hola_y = 0
         self.hola_theta = 0
         
+        
 
     def rpm(self, x, y, z):
 
@@ -132,6 +133,7 @@ def main(args=None):
         if(point > 0 and point < len(bot.goals)) :
             bool_msg.data = True  # Set its value to False
             bot.bool_publsiher.publish(bool_msg)  # Publish the message
+            # time.sleep(5)
 
 
         bool_msg.data = False
@@ -169,9 +171,9 @@ def main(args=None):
 
         kp = 10.0
         ka = 1000.0
-        speed_factor = 1.0
+        speed_factor = 2.0
         
-        if abs(bot.err_x) <= 20.0 or abs(bot.err_y) <= 20.0:
+        if abs(bot.err_x) <= 30.0 or abs(bot.err_y) <= 30.0:
                 speed_factor = 5.0
 
         max_force  = kp * 250 * math.sqrt(2)

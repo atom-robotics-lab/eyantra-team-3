@@ -11,15 +11,15 @@ def generate_launch_description():
         #     executable='feedback.py',
         # ),
         Node(
-            package='eyantra_hb_task',
+            package='eyantra_hb_task_6',
             executable='bot_1_6a_controller.py',
         ),
         Node(
-            package='eyantra_hb_task',
+            package='eyantra_hb_task_6',
             executable='bot_2_6a_controller.py',
         ),
         Node(
-            package='eyantra_hb_task',
+            package='eyantra_hb_task_6',
             executable='bot_3_6a_controller.py',
         ),
         # Node(
@@ -27,7 +27,7 @@ def generate_launch_description():
         #     executable='stop_client.py',
         # ),
         Node(
-            package='eyantra_hb_task',
+            package='eyantra_hb_task_6',
             executable='stop_service.py',
         )
         
